@@ -1,0 +1,126 @@
+{
+  "manifestVersion": 1,
+  "id": "org.stor.invoices",
+  "package": "@hearthlog/module-invoices",
+  "version": "1.0.0",
+  "compatibility": {
+    "moduleApi": 1
+  },
+  "features": [
+    {
+      "id": "invoices",
+      "path": "/invoices",
+      "label": "Invoices",
+      "subtitle": "Create and track invoices",
+      "keywords": "billing invoice paid overdue",
+      "navGroup": "Money",
+      "icon": "file-document-outline",
+      "mobilePrimary": true,
+      "mobileOrder": 2,
+      "navOrder": 20,
+      "children": [
+        {
+          "id": "issued",
+          "label": "Issued",
+          "href": "/invoices",
+          "tab": null,
+          "badgeId": "invoices.issued"
+        },
+        {
+          "id": "received",
+          "label": "Received",
+          "href": "/invoices?tab=received",
+          "tab": "received"
+        },
+        {
+          "id": "analytics",
+          "label": "Analytics",
+          "href": "/invoices?tab=analytics",
+          "tab": "analytics"
+        },
+        {
+          "id": "parties",
+          "label": "Parties",
+          "href": "/invoices?tab=parties",
+          "tab": "parties"
+        }
+      ],
+      "shortcuts": [
+        {
+          "id": "create-invoice",
+          "label": "Create invoice",
+          "subtitle": "Open the invoice form",
+          "keywords": "new invoice billing customer supplier",
+          "query": "?newInvoice=1"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/invoices",
+      "page": "./src/pages/invoices.svelte",
+      "load": "./src/pages/invoices.ts"
+    }
+  ],
+  "calendarIcons": [
+    "file-document-outline"
+  ],
+  "data": {
+    "definitions": "./src/data/definitions.ts",
+    "repositories": "./src/data/repositories.ts"
+  },
+  "projectionVersion": 1,
+  "startup": "./src/startup.ts",
+  "attention": "./src/attention.ts",
+  "localStores": [
+    {
+      "database": "stor-invoice-pdfs",
+      "label": "Generated invoice PDFs",
+      "fileStore": "documents"
+    },
+    {
+      "database": "stor-issued-invoice-files",
+      "label": "Issued invoice originals",
+      "fileStore": "files",
+      "kinds": true
+    },
+    {
+      "database": "stor-received-invoice-files",
+      "label": "Received invoice originals",
+      "fileStore": "files",
+      "kinds": true
+    }
+  ],
+  "aiCapabilities": [
+    "invoice-expense-type"
+  ],
+  "server": {
+    "entry": "./src/server/index.ts",
+    "routes": [
+      "/api/invoice-generation/logs",
+      "/api/invoice-generation",
+      "/api/received-invoice-files/v1",
+      "/api/issued-invoice-files/v1",
+      "/api/received-invoice-extraction/v1"
+    ],
+    "bindings": [
+      {
+        "binding": "INVOICE_PDFS",
+        "type": "r2",
+        "resource": "invoicePdfsBucket"
+      }
+    ],
+    "vars": [
+      {
+        "name": "INVOICE_RENDERER_ORIGIN",
+        "resource": "invoiceRendererOrigin",
+        "optional": true
+      }
+    ]
+  },
+  "refreshKeys": [
+    "app:invoices"
+  ],
+  "styles": "./src/styles.css"
+}

@@ -1,0 +1,42 @@
+/* Invoices' recipes: the analytics and performance reports, and the invoice list's toolbar, status filters, and phone rows.
+   Imported by the host's stylesheet. */
+
+@layer components {
+    .stor-analytics-scope { padding: 16px 4px 12px; background: color-mix(in srgb, var(--stor-bg), transparent 4%); backdrop-filter: blur(12px); }
+    .stor-analytics-hero { border-radius: var(--stor-panel-radius); background: var(--stor-surface); box-shadow: var(--stor-panel-shadow); }
+}
+
+@media (max-width: 767px) {
+    [data-invoice-row] { -webkit-touch-callout: none; }
+    /* Phone invoice rows name the status in its colour instead of a pill, so the due date never truncates. */
+    /* The status chips lead and the options icon ends the row; selecting hides the page action. */
+    .stor-invoice-status-filters { width: auto !important; }
+    body:has([data-invoice-phone-list][data-selecting="true"]) :is(.stor-mobile-action, .stor-mobile-fab) { visibility: hidden; }
+    [data-invoice-phone-list] .stor-invoice-status { border-color: transparent !important; background: transparent !important; padding-inline: 0; font-weight: 600; }
+}
+
+.stor-report-value { font-size: clamp(24px, 2.5vw, 36px); line-height: 1.2; letter-spacing: -0.035em; overflow-wrap: anywhere; }
+
+.stor-performance-report .stor-analytics-hero { background: transparent; box-shadow: none; }
+
+.stor-performance-chart { border-top: 1px solid var(--stor-border); }
+
+.stor-period-inspection dd { overflow-wrap: anywhere; }
+
+.stor-invoice-status-filters { margin-left: auto; }
+
+.stor-invoice-toolbar-main > button { min-height: 44px; }
+
+@media (max-width: 639px) {
+    .stor-refined .stor-performance-report { background: transparent; box-shadow: none; }
+    .stor-performance-report .stor-analytics-hero,
+    .stor-performance-chart { background: var(--stor-surface); border-radius: var(--stor-panel-radius); box-shadow: 0 3px 18px color-mix(in srgb, var(--stor-ink) 4%, transparent); }
+    .stor-performance-chart { border-top: 0; }
+    .stor-refined .stor-analytics-hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stor-refined .stor-analytics-hero > :first-child { grid-column: 1 / -1; }
+    .stor-analytics-hero > :first-child .stor-report-value { font-size: 34px; }
+    .stor-invoice-toolbar-main > [role="status"] { flex-basis: calc(100% - 110px); }
+    .stor-invoice-status-filters { order: 3; width: 100%; margin-left: 0; }
+    /* A fade on the trailing edge shows the row scrolls; end padding lets the last filter clear it. */
+    .stor-invoice-status-filters { padding-inline-end: 28px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+}
