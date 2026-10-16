@@ -1,6 +1,6 @@
 {
   "name": "@hearthlog/module-invoices",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
@@ -25,9 +25,9 @@
     "pdf-lib": "^1.17.1"
   },
   "peerDependencies": {
-    "@hearthlog/contracts": ">=0.1.0 <0.2.0",
-    "@hearthlog/czech": ">=0.1.0 <0.2.0",
-    "@hearthlog/sdk": ">=0.1.0 <0.2.0"
+    "@hearthlog/contracts": ">=0.1.0 <0.2.0 || 0.2.0",
+    "@hearthlog/czech": ">=0.1.0 <0.2.0 || 0.2.0",
+    "@hearthlog/sdk": ">=0.1.0 <0.2.0 || 0.2.0"
   },
   "repository": {
     "type": "git",
@@ -47,10 +47,10 @@
     "test": "hearthlog check-module"
   },
   "devDependencies": {
-    "@hearthlog/contracts": ">=0.1.0 <0.2.0",
-    "@hearthlog/czech": ">=0.1.0 <0.2.0",
-    "@hearthlog/sdk": ">=0.1.0 <0.2.0",
-    "@hearthlog/tooling": ">=0.1.0 <0.2.0",
+    "@hearthlog/contracts": ">=0.1.0 <0.2.0 || 0.2.0",
+    "@hearthlog/czech": ">=0.1.0 <0.2.0 || 0.2.0",
+    "@hearthlog/sdk": ">=0.1.0 <0.2.0 || 0.2.0",
+    "@hearthlog/tooling": ">=0.1.0 <0.2.0 || 0.2.0",
     "vitest": "^4.1.11"
   }
 }

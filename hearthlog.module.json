@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "org.stor.invoices",
   "package": "@hearthlog/module-invoices",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": {
     "moduleApi": 1
   },
