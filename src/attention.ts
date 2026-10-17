@@ -1,5 +1,5 @@
-import { addDays, format, parseISO } from 'date-fns';
-import type { AttentionContribution, AttentionReminder } from '@hearthlog/contracts';
+import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns';
+import type { AttentionContribution, AttentionReminder, NavFigure } from '@hearthlog/contracts';
 import { queryDatabase } from '@hearthlog/sdk/data';
 import { REMINDER_HOUR } from '@hearthlog/sdk/runtime';
 import type { UpcomingInvoice } from './data/attention.js';
@@ -36,7 +36,16 @@ export function invoiceReminders(invoices: readonly UpcomingInvoice[]): Attentio
     });
 }
 
-/** Overdue invoices badge the navigation; coming-due invoices remind on the device. */
+/** The next issued invoice falling due, worded for the sidebar; an overdue badge takes its place there. */
+export function nextDueFigure(invoice: UpcomingInvoice | undefined, today: string): NavFigure[] {
+    if (!invoice) return [];
+    const due = parseISO(invoice.due);
+    const days = differenceInCalendarDays(due, parseISO(today));
+    const when = days === 0 ? 'today' : days === 1 ? 'tomorrow' : format(due, days < 7 ? 'EEE d' : 'd MMM');
+    return [{ id: 'invoices', text: `Due ${when}`, label: `${invoice.number} due ${days < 2 ? when : format(due, 'EEEE d MMMM')}` }];
+}
+
+/** Overdue invoices badge the navigation, the next due date sits beside it; coming-due invoices remind on the device. */
 export const attention: AttentionContribution = {
     async badges({ today }) {
         const count = await queryDatabase((repositories) => repositories.invoiceAttention.countOverdueInvoices(today));
@@ -46,6 +55,11 @@ export const attention: AttentionContribution = {
             tone: 'negative',
             label: `${count} overdue ${count === 1 ? 'invoice' : 'invoices'}`,
         }];
+    },
+    async figures({ today }) {
+        const [next] = await queryDatabase((repositories) =>
+            repositories.invoiceAttention.upcomingInvoices(today, format(addDays(parseISO(today), INVOICE_HORIZON_DAYS), DAY), 1));
+        return nextDueFigure(next, today);
     },
     async reminders({ today }) {
         const invoices = await queryDatabase((repositories) =>
