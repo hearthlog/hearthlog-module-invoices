@@ -1003,15 +1003,15 @@
             </div>
         {/if}
         <div class="grid grid-cols-[minmax(0,1fr)_8.5rem] gap-2">
-            <label class="text-sm"><span class="sr-only">Supplier</span><input list="received-invoice-suppliers" placeholder="Supplier" bind:value={supplierName} onblur={() => void suggestExpense()} class="h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-base" /></label>
-            <label class="text-sm"><span class="sr-only">Amount</span><input type="text" inputmode="decimal" placeholder="Kč" bind:value={amount} class="h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-right text-base" /></label>
+            <label class="text-sm"><span class="sr-only">Supplier</span><input list="received-invoice-suppliers" placeholder="Supplier" bind:value={supplierName} onblur={() => void suggestExpense()} class="stor-field-control h-11 w-full px-3 text-base" /></label>
+            <label class="text-sm"><span class="sr-only">Amount</span><input type="text" inputmode="decimal" placeholder="Kč" bind:value={amount} class="stor-field-control h-11 w-full px-3 text-right text-base" /></label>
         </div>
         {#if detailsOpen || !invoiceNumber || !dueDate}
             <div class="grid gap-3">
-                <label class="text-sm">Invoice number<input placeholder="From the supplier PDF" bind:value={invoiceNumber} class="mt-1 h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-base" /></label>
+                <label class="text-sm">Invoice number<input placeholder="From the supplier PDF" bind:value={invoiceNumber} class="stor-field-control mt-1 h-11 w-full px-3 text-base" /></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="text-sm">Issued<input type="date" bind:value={issueDate} class="mt-1 h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3" /></label>
-                    <label class="text-sm">Due<input type="date" bind:value={dueDate} class="mt-1 h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3" /></label>
+                    <label class="text-sm">Issued<input type="date" bind:value={issueDate} class="stor-field-control mt-1 h-11 w-full px-3" /></label>
+                    <label class="text-sm">Due<input type="date" bind:value={dueDate} class="stor-field-control mt-1 h-11 w-full px-3" /></label>
                 </div>
             </div>
         {:else}
