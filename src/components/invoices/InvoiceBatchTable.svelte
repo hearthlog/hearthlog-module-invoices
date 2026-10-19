@@ -565,7 +565,7 @@
 </script>
 
 {#snippet sortHeader(id: string, label: string)}
-    <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-[var(--stor-accent-strong)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
+    <button type="button" class="inline-flex items-center gap-1 font-[inherit] [text-transform:inherit] hover:text-[var(--stor-accent-strong)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
         onclick={() => table.getColumn(id)?.toggleSorting()} aria-label={`Sort by ${label}`}>
         {label}
         {#if sorting[0]?.id === id}
@@ -594,7 +594,7 @@
                 class="stor-segmented-option shrink-0 whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
             >
                 {option.label}
-                {#if option.value === 'overdue' && overdueCount > 0}<span class="ml-1 rounded-full bg-[var(--stor-negative)] px-1.5 md:hidden text-[11px] font-semibold text-[var(--stor-negative-text)]">{overdueCount}</span>{/if}
+                {#if queryResult?.statusCounts[option.value] !== undefined}<span class="stor-tab-count ml-1.5">{queryResult.statusCounts[option.value]}</span>{/if}
             </button>
         {/each}
     </div>
@@ -721,21 +721,34 @@
     </div>
 {/if}
 
+{#snippet invoiceIllustration()}
+    <svg viewBox="0 0 120 84" class="h-[84px] w-[120px]" aria-hidden="true">
+        <rect x="18" y="14" width="64" height="64" rx="8" fill="var(--stor-surface-muted)" stroke="var(--stor-border-strong)" stroke-width="1.5" />
+        <rect x="38" y="6" width="64" height="64" rx="8" fill="var(--stor-surface)" stroke="var(--stor-muted-text)" stroke-width="1.5" />
+        <path d="M50 24h40M50 34h28M50 50h16" stroke="var(--stor-faint-text)" stroke-width="1.5" stroke-linecap="round" fill="none" />
+        <path d="M76 50h14" stroke="var(--stor-accent-strong)" stroke-width="2.5" stroke-linecap="round" fill="none" />
+        <circle cx="96" cy="66" r="11" fill="var(--stor-accent)" />
+        <path d="M96 61v10M91 66h10" stroke="var(--stor-action-text, #fff)" stroke-width="2" stroke-linecap="round" fill="none" />
+    </svg>
+{/snippet}
+
 {#if loading || !queryResult && !queryError}
     <div class="p-4 text-sm text-[var(--stor-muted-text)]">Loading invoices…</div>
 {:else if queryError}
     <div class="flex items-center gap-3 p-4 text-sm text-[var(--stor-negative)]" role="alert">Could not load invoices. <button type="button" class="font-semibold underline" onclick={() => queryNonce += 1}>Retry</button></div>
 {:else if visibleRows.length === 0}
     <EmptyState title={noneMatch ? 'No invoices match these filters' : emptyTitle}
-        description={noneMatch ? 'Adjust or clear the column filters.' : emptyDescription} surface={false}>
-        <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-            {#if hasFilters}
-                <Button variant="secondary" onclick={resetFilters}>Clear filters</Button>
-            {/if}
-            {#if !hasFilters && totalCount === 0 && onCreate}
-                <CommandOnly><Button onclick={onCreate}>{createLabel}</Button></CommandOnly>
-            {/if}
-        </div>
+        description={noneMatch ? 'Adjust or clear the column filters.' : emptyDescription} surface={false}
+        illustration={!noneMatch && totalCount === 0 ? invoiceIllustration : undefined}>
+        {#if hasFilters}
+            <Button variant="secondary" onclick={resetFilters}>Clear filters</Button>
+        {/if}
+        {#if !hasFilters && totalCount === 0 && onCreate}
+            <CommandOnly>
+                <Button onclick={onCreate}>{createLabel}</Button>
+                {#if onImport}<Button variant="secondary" onclick={onImport}>Import PDF</Button>{/if}
+            </CommandOnly>
+        {/if}
     </EmptyState>
 {:else}
     <div class="hidden max-w-full overflow-x-auto lg:block">
@@ -752,37 +765,37 @@
                 <col class="w-28" />
                 <col class="w-20" />
             </colgroup>
-            <thead class="bg-[var(--stor-surface-muted)] text-xs text-[var(--stor-muted-text)]">
+            <thead class="stor-overline">
                 <tr>
-                    <th scope="col" class="px-3 py-3"><input type="checkbox" aria-label="Select all filtered invoices" checked={pageFullySelected} indeterminate={pageSelected.length > 0 && !pageFullySelected} onchange={togglePage} /></th>
-                    <th scope="col" class="px-3 py-3" aria-sort={sorting[0]?.id === 'party' || sorting[0]?.id === 'invoiceNumber' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom"><input type="checkbox" aria-label="Select all filtered invoices" checked={pageFullySelected} indeterminate={pageSelected.length > 0 && !pageFullySelected} onchange={togglePage} /></th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'party' || sorting[0]?.id === 'invoiceNumber' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>
                         <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
                             {@render sortHeader('party', partyLabel)}
                             <span class="text-[var(--stor-border-strong)]" aria-hidden="true">/</span>
                             {@render sortHeader('invoiceNumber', 'Invoice')}
                         </span>
                     </th>
-                    <th scope="col" class="px-3 py-3" aria-sort={sorting[0]?.id === 'issued' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('issued', 'Issued')}</th>
-                    <th scope="col" class="px-3 py-3" aria-sort={sorting[0]?.id === 'due' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('due', 'Due')}</th>
-                    <th scope="col" class="px-3 py-3 text-right" aria-sort={sorting[0]?.id === 'beforeVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('beforeVat', 'Before VAT')}</th>
-                    <th scope="col" class="px-3 py-3 text-right" aria-sort={sorting[0]?.id === 'afterVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('afterVat', 'Total payable')}</th>
-                    {#if showExpenseType}<th scope="col" class="px-3 py-3">Type</th>{/if}
-                    <th scope="col" class="px-3 py-3" aria-sort={sorting[0]?.id === 'status' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('status', 'Status')}</th>
-                    <th scope="col" class="px-3 py-3 text-right">Actions</th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'issued' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('issued', 'Issued')}</th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'due' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('due', 'Due')}</th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'beforeVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('beforeVat', 'Before VAT')}</th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'afterVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('afterVat', 'Total payable')}</th>
+                    {#if showExpenseType}<th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom">Type</th>{/if}
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'status' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('status', 'Status')}</th>
+                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--stor-border)]">
+            <tbody class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_55%,transparent)]">
                 {#each visibleRows as row (row.id)}
-                    <tr class="transition-colors hover:bg-[var(--stor-surface-muted)] {isRowSelected(row.id) || activeId === row.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
-                        <td class="px-3 py-3"><input type="checkbox" aria-label={`Select invoice ${row.invoiceNumber}`} checked={isRowSelected(row.id)} onchange={() => toggleRow(row.id)} /></td>
-                        <td class="max-w-[18rem] px-3 py-3"><button type="button" data-invoice-open={row.id} aria-current={activeId === row.id ? 'true' : undefined} aria-label={`${tableLabel === 'Invoices' ? 'View invoice' : 'View received invoice'} ${row.invoiceNumber}`} onclick={() => onSelect(row)} class="block max-w-full text-left hover:underline">{#if row.party}<span class="block truncate font-semibold text-[var(--stor-ink)]">{row.party}</span><span class="mt-0.5 block truncate text-xs tabular-nums text-[var(--stor-muted-text)]">{row.invoiceNumber}</span>{:else}<span class="block truncate font-semibold tabular-nums text-[var(--stor-ink)]">{row.invoiceNumber}</span><span class="mt-0.5 block truncate text-xs text-[var(--stor-muted-text)]">No {partyLabel.toLocaleLowerCase()}</span>{/if}</button>{#if row.storageStatus !== null && storageLabel}<span class="block text-xs text-[var(--stor-muted-text)]">{storageLabel(row.storageStatus)}</span>{/if}</td>
-                        <td class="whitespace-nowrap px-3 py-3 tabular-nums">{formatInvoiceDate(row.issued)}</td>
-                        <td class="whitespace-nowrap px-3 py-3 tabular-nums">{formatInvoiceDate(row.due)}</td>
-                        <td class="whitespace-nowrap px-3 py-3 text-right tabular-nums">{money(row.beforeVat, row.currency)}</td>
-                        <td class="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums">{money(row.afterVat, row.currency)}</td>
-                        {#if showExpenseType}<td class="truncate px-3 py-3 text-xs text-[var(--stor-muted-text)]">{expenseTypeLabel(row.expenseType) || '—'}</td>{/if}
-                        <td class="px-3 py-3">{@render statusBadge(row)}</td>
-                        <td class="px-3 py-3 text-right">{@render actions(row)}</td>
+                    <tr class="group h-14 transition-colors hover:bg-[var(--stor-surface-muted)]/70 {isRowSelected(row.id) || activeId === row.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
+                        <td class="px-3 py-2"><input type="checkbox" aria-label={`Select invoice ${row.invoiceNumber}`} checked={isRowSelected(row.id)} onchange={() => toggleRow(row.id)} /></td>
+                        <td class="max-w-[18rem] px-3 py-2"><button type="button" data-invoice-open={row.id} aria-current={activeId === row.id ? 'true' : undefined} aria-label={`${tableLabel === 'Invoices' ? 'View invoice' : 'View received invoice'} ${row.invoiceNumber}`} onclick={() => onSelect(row)} class="block max-w-full text-left hover:underline">{#if row.party}<span class="block truncate font-semibold text-[var(--stor-ink)]">{row.party}</span><span class="mt-0.5 block truncate text-xs tabular-nums text-[var(--stor-muted-text)]">{row.invoiceNumber}</span>{:else}<span class="block truncate font-semibold tabular-nums text-[var(--stor-ink)]">{row.invoiceNumber}</span><span class="mt-0.5 block truncate text-xs text-[var(--stor-muted-text)]">No {partyLabel.toLocaleLowerCase()}</span>{/if}</button>{#if row.storageStatus !== null && storageLabel}<span class="block text-xs text-[var(--stor-muted-text)]">{storageLabel(row.storageStatus)}</span>{/if}</td>
+                        <td class="whitespace-nowrap px-3 py-2 tabular-nums">{formatInvoiceDate(row.issued)}</td>
+                        <td class="whitespace-nowrap px-3 py-2 tabular-nums">{formatInvoiceDate(row.due)}</td>
+                        <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{money(row.beforeVat, row.currency)}</td>
+                        <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums">{money(row.afterVat, row.currency)}</td>
+                        {#if showExpenseType}<td class="truncate px-3 py-2 text-xs text-[var(--stor-muted-text)]">{expenseTypeLabel(row.expenseType) || '—'}</td>{/if}
+                        <td class="px-3 py-2">{@render statusBadge(row)}</td>
+                        <td class="px-3 py-2 text-right"><div class="flex justify-end opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">{@render actions(row)}</div></td>
                     </tr>
                 {/each}
             </tbody>

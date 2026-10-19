@@ -273,9 +273,9 @@
     </section>
 {:else}
     <section class="stor-panel p-[var(--stor-panel-padding)]" aria-label="Party filters">
-        <div class="flex flex-wrap items-end gap-x-4 gap-y-3">
+        <div class="stor-panel-header-flush flex flex-wrap items-end gap-x-4 gap-y-3">
             <div class="min-w-0 flex-1">
-                <h2 class="text-base font-semibold text-[var(--stor-ink)]">Parties</h2>
+                <h2 class="stor-panel-title">Parties</h2>
                 <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
                     One company record serves both invoice slots · {active.length} record{active.length === 1 ? '' : 's'}
                 </p>
@@ -293,9 +293,9 @@
 
     {#if duplicateGroups.length}
         <section class="stor-panel" aria-label="Possible duplicate parties">
-            <div class="stor-panel-header">
+            <div class="stor-panel-header stor-panel-header-rule">
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-[var(--stor-ink)]">Possible duplicates</h2>
+                    <h2 class="stor-panel-title">Possible duplicates</h2>
                     <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">
                         Records sharing an IČO or name · merge keeps one record and points the rest at it
                     </p>
@@ -341,7 +341,7 @@
 
     {#if merge}
         <section class="stor-panel p-[var(--stor-panel-padding)]" aria-label="Merge parties">
-            <h2 class="text-base font-semibold text-[var(--stor-ink)]">Merge duplicate parties</h2>
+            <h2 class="stor-panel-title">Merge duplicate parties</h2>
             <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
                 Choose the record to keep. The others become aliases, and existing invoices still resolve.
             </p>
