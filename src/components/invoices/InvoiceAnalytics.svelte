@@ -560,9 +560,9 @@
         </section>
 
         <section class="stor-performance-chart" aria-label="Revenue and costs chart">
-            <div class="stor-panel-header">
+            <div class="stor-panel-header stor-panel-header-rule">
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-[var(--stor-ink)]">Revenue and costs</h2>
+                    <h2 class="stor-panel-title">Revenue and costs</h2>
                     <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">
                         {periodLabel} · before VAT{#if comparison} · dashed lines are {previousYear}{/if}{#if currentBucketIndex >= 0} · shaded band is the current period{/if}
                     </p>
@@ -673,9 +673,9 @@
         </div>
 
         <section class="stor-panel" aria-label="VAT by quarter">
-            <div class="stor-panel-header">
+            <div class="stor-panel-header stor-panel-header-rule">
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-[var(--stor-ink)]">VAT by quarter</h2>
+                    <h2 class="stor-panel-title">VAT by quarter</h2>
                     <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">
                         Tax point (DUZP) only · output VAT − input VAT · CZK only · {vatScopeLabel} · {vatReport.totals.issuedCount} issued / {vatReport.totals.receivedCount} received
                     </p>
@@ -801,9 +801,9 @@
 
     <div class="space-y-4">
         <section class="stor-panel" aria-label="Income tax estimate">
-            <div class="stor-panel-header">
+            <div class="stor-panel-header stor-panel-header-rule">
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-[var(--stor-ink)]">Income tax estimate</h2>
+                    <h2 class="stor-panel-title">Income tax estimate</h2>
                     <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">
                         Annual flat-rate {percent(taxConfig.flatRate)} on issued revenue (before VAT), by estimated payment date (due date){#if highlightedTax} · {highlightedTax.year}{/if}
                     </p>
@@ -895,9 +895,9 @@
         </section>
 
         <section class="stor-panel" aria-label="Tax by year detail">
-            <div class="stor-panel-header">
+            <div class="stor-panel-header stor-panel-header-rule">
                 <div class="min-w-0">
-                    <h2 class="text-base font-semibold text-[var(--stor-ink)]">Yearly tax detail</h2>
+                    <h2 class="stor-panel-title">Yearly tax detail</h2>
                     <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">Every year on record; select a year to scope the dashboard to it.</p>
                 </div>
             </div>

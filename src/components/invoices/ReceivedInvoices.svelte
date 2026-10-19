@@ -821,7 +821,7 @@
 
         {#if invoice.description}
             <section aria-label="Invoice notes">
-                <h3 class="text-sm font-semibold text-[var(--stor-ink)]">Notes</h3>
+                <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Notes</h3>
                 <p class="mt-1 whitespace-pre-wrap text-sm text-[var(--stor-muted-text)]">{invoice.description}</p>
             </section>
         {/if}
@@ -846,7 +846,7 @@
 
         {#if sourceInfo}
             <section aria-label="Data source">
-                <h3 class="text-sm font-semibold text-[var(--stor-ink)]">Data source</h3>
+                <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Data source</h3>
                 <div class="mt-2 rounded-xl bg-[var(--stor-surface-muted)] p-3 text-sm text-[var(--stor-ink)]">
                     <p class="font-semibold">
                         {sourceInfo.source === 'isdoc' ? (sourceInfo.origin === 'separate' ? 'Uploaded ISDOC file' : 'Attached ISDOC') : sourceInfo.source === 'ai' ? `AI (${sourceInfo.provider || 'provider'}${sourceInfo.model ? ` ${sourceInfo.model}` : ''})` : 'Entered manually'}{#if sourceInfo.isdocVersion} · ISDOC {sourceInfo.isdocVersion}{/if}

@@ -31,7 +31,7 @@
 </script>
 
 <section aria-label="Line items">
-    <h3 class="text-sm font-semibold text-[var(--stor-ink)]">Line items</h3>
+    <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Line items</h3>
     {#if items.length > 0}
         <div
             class="mt-2 overflow-hidden rounded-xl bg-[var(--stor-surface-muted)]"

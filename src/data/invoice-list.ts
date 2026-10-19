@@ -58,6 +58,8 @@ export interface InvoiceListResult {
     page: number;
     pageSize: number;
     pageCount: number;
+    /** Rows per status filter value (`all`, `outstanding`, `unpaid`, and each stored status), under every filter but the status. */
+    statusCounts: Record<string, number>;
     parties: string[];
     issuedDates: string[];
     dueDates: string[];
@@ -69,6 +71,7 @@ export interface InvoiceListResult {
 interface InvoiceFacets {
     totalCount: number;
     matchCount: number;
+    statusCounts: Record<string, number>;
     parties: string[];
     issuedDates: string[];
     dueDates: string[];
@@ -276,6 +279,37 @@ function stringList(raw: unknown, pattern?: RegExp): string[] {
         .sort((left, right) => left.localeCompare(right));
 }
 
+/** Rows per status filter value under every other filter, so a segment's count is what picking it would show. */
+async function queryStatusCounts(
+    session: ReadModelSession,
+    request: InvoiceListRequest,
+): Promise<Record<string, number>> {
+    const result = await session.execute(sql<Row>`${baseRows(session, request.direction, request.today)}
+        SELECT COUNT(*) AS allCount,
+            COALESCE(SUM(status != 'paid'), 0) AS outstandingCount,
+            COALESCE(SUM(status IN ('unpaid', 'overdue')), 0) AS unpaidCount,
+            COALESCE(SUM(status = 'draft'), 0) AS draftCount,
+            COALESCE(SUM(status = 'sent'), 0) AS sentCount,
+            COALESCE(SUM(status = 'paid'), 0) AS paidCount,
+            COALESCE(SUM(status = 'overdue'), 0) AS overdueCount,
+            COALESCE(SUM(status = 'review'), 0) AS reviewCount
+        FROM invoice_rows
+        WHERE ${filterPredicate({ ...request.filters, status: 'all' })}
+    `);
+    const row = result.rows[0];
+    const count = (key: string) => Number(row?.[key] ?? 0);
+    return {
+        all: count('allCount'),
+        outstanding: count('outstandingCount'),
+        unpaid: count('unpaidCount'),
+        draft: count('draftCount'),
+        sent: count('sentCount'),
+        paid: count('paidCount'),
+        overdue: count('overdueCount'),
+        review: count('reviewCount'),
+    };
+}
+
 /**
  * Facets are read before the page so an out-of-range page number (a stale link,
  * a filter that shrank the result set) clamps instead of rendering an empty
@@ -300,6 +334,7 @@ async function queryInvoiceFacets(
     return {
         totalCount: Number(row?.totalCount ?? 0),
         matchCount: Number(row?.matchCount ?? 0),
+        statusCounts: await queryStatusCounts(session, request),
         parties: stringList(row?.parties),
         issuedDates: stringList(row?.issuedDates, /^\d{4}-\d{2}-\d{2}$/),
         dueDates: stringList(row?.dueDates, /^\d{4}-\d{2}-\d{2}$/),
@@ -328,6 +363,7 @@ export async function queryInvoiceList(
         rows: result.rows.map(toRow),
         matchCount: facets.matchCount,
         totalCount: facets.totalCount,
+        statusCounts: facets.statusCounts,
         page,
         pageSize,
         pageCount,

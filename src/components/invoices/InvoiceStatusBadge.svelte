@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Badge } from "@hearthlog/sdk/ui";
 
     /**
      * Purely presentational: `status` arrives already resolved, including
@@ -27,29 +28,22 @@
     /** A draft whose document was already issued reads as issued. */
     const state = $derived(status === "draft" && documentState === "issued" ? "issued" : status);
     const label = $derived(STATUS_LABELS[state] ?? status);
-    const palette = $derived.by(() => {
+    const variant = $derived.by(() => {
         switch (state) {
             case "overdue":
-                return { text: "var(--stor-negative)", background: "var(--stor-negative-soft)", border: "color-mix(in srgb, var(--stor-negative), transparent 65%)" };
+                return "danger";
             case "paid":
-                return { text: "var(--stor-positive)", background: "var(--stor-positive-soft)", border: "color-mix(in srgb, var(--stor-positive), transparent 65%)" };
+                return "success";
             case "sent":
             case "issued":
-                return { text: "var(--stor-info)", background: "var(--stor-info-soft)", border: "var(--stor-info-border)" };
+                return "info";
             case "review":
-                return { text: "var(--stor-warning)", background: "var(--stor-warning-soft)", border: "color-mix(in srgb, var(--stor-warning), transparent 65%)" };
+            case "unpaid":
+                return "warning";
             default:
-                return { text: "var(--stor-muted-text)", background: "var(--stor-surface-muted)", border: "var(--stor-border)" };
+                return "default";
         }
     });
 </script>
 
-<span
-    class="stor-invoice-status inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium"
-    style:color={palette.text}
-    style:background={palette.background}
-    style:border-color={palette.border}
->
-    <span aria-hidden="true" class="h-1.5 w-1.5 shrink-0 rounded-full" style:background="currentColor"></span>
-    {label}
-</span>
+<Badge {variant} class="stor-invoice-status whitespace-nowrap">{label}</Badge>

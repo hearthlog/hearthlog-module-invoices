@@ -266,7 +266,7 @@
     <div class="space-y-5 {filesOpen ? '' : 'max-md:hidden'}">
     {#if invoice.description}
         <section aria-label="Invoice notes">
-            <h3 class="text-sm font-semibold text-[var(--stor-ink)]">Notes</h3>
+            <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Notes</h3>
             <p
                 class="mt-1 whitespace-pre-wrap text-sm text-[var(--stor-muted-text)]"
             >

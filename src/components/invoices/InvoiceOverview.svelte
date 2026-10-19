@@ -1,7 +1,7 @@
 <script lang="ts">
     import { queryDatabase } from "@hearthlog/sdk/data";
     import type { InvoiceOverview } from "../../data/invoice-list.js";
-    import { Amount } from "@hearthlog/sdk/ui";
+    import { Amount, Metric } from "@hearthlog/sdk/ui";
     import { formatAmount, formatNumber } from "@hearthlog/sdk/format";
     import { PhoneGlance } from "@hearthlog/sdk/ui";
 
@@ -55,19 +55,19 @@
         <!-- Three figures in one row at every width; phones keep them in the sheet behind the top bar's figure. -->
         <section class="stor-panel grid {sheet ? 'grid-cols-1 gap-4 p-[var(--stor-panel-padding)] shadow-none' : 'grid-cols-3 px-1 py-3 max-md:hidden sm:p-[var(--stor-panel-padding)]'}" aria-label="Invoice summary">
             <div class="min-w-0 {sheet ? '' : 'px-3 sm:pl-0 sm:pr-6'}">
-                <p class="stor-metric-label">Outstanding</p>
-                <p class="truncate text-base font-semibold tracking-tight tabular-nums text-[var(--stor-ink)] sm:text-2xl {sheet ? 'text-2xl' : ''}"><Amount value={overview.outstanding} {unit} /></p>
-                <p class="stor-metric-support {sheet ? '' : 'max-sm:hidden'}">{formatNumber(overview.outstandingCount)} {overview.outstandingCount === 1 ? "invoice" : "invoices"}</p>
+                <Metric label="Outstanding" detail={`${formatNumber(overview.outstandingCount)} ${overview.outstandingCount === 1 ? "invoice" : "invoices"}`}>
+                    <Amount value={overview.outstanding} {unit} />
+                </Metric>
             </div>
             <div class="min-w-0 {sheet ? 'border-t border-[var(--stor-border)] pt-4' : 'border-l border-[var(--stor-border)] px-3 sm:px-6'}">
-                <p class="stor-metric-label">Overdue</p>
-                <p class="truncate text-base font-semibold tracking-tight tabular-nums sm:text-2xl {sheet ? 'text-2xl' : ''} {overview.overdueCount > 0 ? 'text-[var(--stor-negative)]' : 'text-[var(--stor-ink)]'}"><Amount value={overview.overdue} {unit} /></p>
-                <p class="stor-metric-support {sheet ? '' : 'max-sm:hidden'}">{overview.overdueCount > 0 ? `${formatNumber(overview.overdueCount)} past due` : "Nothing late"}</p>
+                <Metric label="Overdue" tone={overview.overdueCount > 0 ? "negative" : "neutral"} detail={overview.overdueCount > 0 ? `${formatNumber(overview.overdueCount)} past due` : "Nothing late"}>
+                    <Amount value={overview.overdue} {unit} />
+                </Metric>
             </div>
             <div class="min-w-0 {sheet ? 'border-t border-[var(--stor-border)] pt-4' : 'border-l border-[var(--stor-border)] px-3 sm:pl-6 sm:pr-0'}">
-                <p class="stor-metric-label"><span class={sheet ? '' : 'max-sm:hidden'}>Invoiced in {quarterLabel}</span>{#if !sheet}<span class="sm:hidden">{quarterLabel} invoiced</span>{/if}</p>
-                <p class="truncate text-base font-semibold tracking-tight tabular-nums text-[var(--stor-ink)] sm:text-2xl {sheet ? 'text-2xl' : ''}"><Amount value={overview.invoiced} {unit} /></p>
-                <p class="stor-metric-support {sheet ? '' : 'max-sm:hidden'}">Payable totals by issue date</p>
+                <Metric label={`Invoiced in ${quarterLabel}`} detail="Payable totals by issue date">
+                    <Amount value={overview.invoiced} {unit} />
+                </Metric>
             </div>
         </section>
     {/if}
