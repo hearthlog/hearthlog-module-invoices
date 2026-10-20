@@ -697,7 +697,7 @@
         <!-- Below lg these actions float at the thumb's corner instead of taking a row above the list. -->
         <CommandOnly>
             {#if invoiceTab === 'issued'}
-                <Button class="hidden lg:inline-flex" aria-label="New invoice" onclick={startNewInvoice}>
+                <Button class="hidden lg:inline-flex" aria-label="New invoice" data-stor-new shortcut="N" onclick={startNewInvoice}>
                     <IconPlus class="h-4 w-4" />
                     New invoice
                 </Button>
