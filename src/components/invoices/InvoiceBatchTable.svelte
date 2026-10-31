@@ -591,10 +591,10 @@
                 type="button"
                 aria-pressed={statusFilter === option.value}
                 onclick={() => setStatus(option.value)}
-                class="stor-segmented-option shrink-0 whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
+                class="stor-segmented-option shrink-0 whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)] {queryResult?.statusCounts[option.value] === 0 && statusFilter !== option.value ? 'opacity-55' : ''}"
             >
                 {option.label}
-                {#if queryResult?.statusCounts[option.value] !== undefined}<span class="stor-tab-count ml-1.5">{queryResult.statusCounts[option.value]}</span>{/if}
+                {#if (queryResult?.statusCounts[option.value] ?? 0) > 0}<span class="stor-tab-count ml-1.5">{queryResult?.statusCounts[option.value]}</span>{/if}
             </button>
         {/each}
     </div>
