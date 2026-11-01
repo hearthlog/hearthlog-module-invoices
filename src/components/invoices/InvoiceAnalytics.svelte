@@ -476,18 +476,19 @@
         aria-label="Analytics period and scope"
     >
         <div class="flex flex-wrap items-end gap-x-5 gap-y-3">
-            <nav class="stor-page-tabs mobile-scroll flex min-w-0 max-w-full items-center overflow-x-auto" aria-label="Analytics reports" {@attach tabIndicator}>
+            <div class="stor-segmented-control mobile-scroll flex min-w-0 max-w-full items-center overflow-x-auto" role="group" aria-label="Analytics reports">
                 {#each sectionLinks as link (link.id)}
                     <button
                         type="button"
+                        aria-pressed={activeSection === link.id}
                         aria-current={activeSection === link.id ? 'true' : undefined}
                         onclick={() => selectReport(link.id)}
-                        class="stor-page-tab"
+                        class="stor-segmented-option shrink-0 whitespace-nowrap"
                     >
                         {link.label}
                     </button>
                 {/each}
-            </nav>
+            </div>
         </div>
         <!-- Phones: the report's scope is one chip; its sheet holds the year, the date basis and the notes. -->
         <button type="button" class="mt-3 inline-flex h-9 items-center gap-1 rounded-full bg-[var(--stor-surface-raised)] px-3.5 text-sm font-semibold text-[var(--stor-ink)] shadow-[var(--stor-elevation-1)] md:hidden" aria-haspopup="dialog" onclick={() => (scopeOpen = true)}>
@@ -535,16 +536,16 @@
     <div class="stor-performance-report stor-panel space-y-4">
 
         <section
-            class="stor-analytics-hero grid gap-5 p-[var(--stor-panel-padding)] sm:grid-cols-3 lg:gap-8"
+            class="stor-analytics-hero grid gap-5 p-[var(--stor-panel-padding)] sm:grid-cols-3 sm:gap-0 sm:p-0 sm:[&>div]:px-6 sm:[&>div]:py-5 sm:[&>div+div]:border-l sm:[&>div+div]:border-[var(--stor-border)]"
             aria-label={`Totals for ${periodLabel}`}
         >
             {#each kpis as kpi (kpi.label)}
                 <div class="min-w-0">
-                    <p class="text-xs font-medium text-[var(--stor-muted-text)]">{kpi.label}</p>
+                    <p class="stor-overline">{kpi.label}</p>
                     <p class="stor-report-value mt-2 font-semibold tabular-nums {kpi.tone}">{kpi.value.replace(/\s*Kč$/, '')}<span class="ml-1 text-sm font-medium text-[var(--stor-muted-text)]">Kč</span></p>
                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--stor-muted-text)]">
                         {#if kpi.delta}
-                            <span class="inline-flex items-center gap-1 rounded-full bg-[var(--stor-surface-muted)] px-2 py-0.5 font-semibold tabular-nums {kpi.delta.tone === 'positive' ? 'text-[var(--stor-positive)]' : kpi.delta.tone === 'negative' ? 'text-[var(--stor-negative)]' : 'text-[var(--stor-muted-text)]'}">
+                            <span class="inline-flex h-[22px] items-center gap-1 rounded-full px-2 font-semibold tabular-nums {kpi.delta.tone === 'positive' ? 'bg-[var(--stor-positive-soft)] text-[var(--stor-positive)]' : kpi.delta.tone === 'negative' ? 'bg-[var(--stor-negative-soft)] text-[var(--stor-negative)]' : 'bg-[var(--stor-surface-muted)] text-[var(--stor-muted-text)]'}">
                                 <span aria-hidden="true">{kpi.delta.trend === 'up' ? '▲' : '▼'}</span>
                                 <span class="sr-only">{kpi.delta.trend === 'up' ? 'up' : 'down'}</span>
                                 {kpi.delta.text}
@@ -703,6 +704,33 @@
                     <p class="mt-1 text-xl font-semibold tabular-nums text-[var(--stor-ink)]">{money(vatReport.totals.receivedVat)}</p>
                 </div>
             </div>
+            {#if vatReport.quarters.length > 0}
+                {@const vatPeak = Math.max(1, ...vatReport.quarters.map((row) => Math.max(row.issuedVat, row.receivedVat)))}
+                <ol class="grid gap-3.5 px-[var(--stor-panel-padding)] pb-5 sm:grid-cols-2 xl:grid-cols-4" aria-label="VAT by quarter at a glance">
+                    {#each vatReport.quarters as row, index (row.key)}
+                        <li class="flex flex-col gap-3.5 rounded-2xl bg-[var(--stor-surface)] p-4 {vatMarkerIndex === index ? 'shadow-[inset_0_0_0_1.5px_var(--stor-accent-strong)]' : 'shadow-[inset_0_0_0_1px_var(--stor-border)]'}">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[20px] font-medium tracking-tight text-[var(--stor-ink)]">{row.label}</span>
+                                {#if vatMarkerIndex === index}<span class="rounded-full bg-[var(--stor-accent-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--stor-accent-strong)]">Current</span>{/if}
+                            </div>
+                            <div>
+                                <p class="stor-overline">{row.vatDue < 0 ? 'VAT credit' : 'VAT due'}</p>
+                                <p class="text-xl font-semibold tracking-tight tabular-nums {row.vatDue < 0 ? 'text-[var(--stor-positive)]' : 'text-[var(--stor-ink)]'}">{money(Math.abs(row.vatDue))}</p>
+                            </div>
+                            <div class="flex flex-col gap-1.5 text-xs text-[var(--stor-muted-text)]">
+                                <span class="h-2 rounded bg-[var(--stor-accent-strong)]" style:width={`${(row.issuedVat / vatPeak) * 100}%`} aria-hidden="true"></span>
+                                <span class="flex justify-between">Output<strong class="font-semibold tabular-nums text-[var(--stor-ink)]">{money(row.issuedVat)}</strong></span>
+                                <span class="h-2 rounded bg-[var(--stor-chart-received,var(--stor-muted-text))]" style:width={`${(row.receivedVat / vatPeak) * 100}%`} aria-hidden="true"></span>
+                                <span class="flex justify-between">Input<strong class="font-semibold tabular-nums text-[var(--stor-ink)]">{money(row.receivedVat)}</strong></span>
+                            </div>
+                            <div class="mt-auto flex gap-4 border-t border-[var(--stor-border)] pt-3 text-[13px] font-semibold text-[var(--stor-accent-strong)]">
+                                <button type="button" class="hover:underline" onclick={() => drillVatQuarter(index, 'issued')}>Issued →</button>
+                                <button type="button" class="hover:underline" onclick={() => drillVatQuarter(index, 'received')}>Received →</button>
+                            </div>
+                        </li>
+                    {/each}
+                </ol>
+            {/if}
             <div class="grid gap-5 px-[var(--stor-panel-padding)] pb-[var(--stor-panel-padding)] lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
                 <div class="min-w-0">
                     {#if vatReport.quarters.length > 0}

@@ -87,7 +87,7 @@ type Row = Record<string, unknown>;
  * and `currency` are computed exactly once, here, so a row can never be sorted
  * or filtered by one value while a different one is displayed.
  */
-const ROW_COLUMNS = sql`id, invoiceNumber, party, issued, due, taxPoint, beforeVat, afterVat, currency, status, documentState, storageStatus, expenseType`;
+const ROW_COLUMNS = sql`id, invoiceNumber, party, issued, due, taxPoint, beforeVat, afterVat, currency, status, documentState, storageStatus, expenseType, paidAt`;
 
 function baseRows(
     session: ReadModelSession,
@@ -127,7 +127,8 @@ function baseRows(
                         WHEN i.status = 'draft' THEN 'draft' ELSE 'issued' END AS documentState,
                     CASE WHEN COALESCE(i.file_id, '') != '' AND COALESCE(i.storage_status, '') != 'uploaded'
                         THEN COALESCE(i.storage_status, '') END AS storageStatus,
-                    '' AS expenseType
+                    '' AS expenseType,
+                    '' AS paidAt
                 FROM ${session.table('invoices')} AS i
                 LEFT JOIN line_totals AS lt ON lt.id = i.id
                 LEFT JOIN ${session.table('invoice_parties')} AS p
@@ -175,7 +176,8 @@ function baseRows(
                 NULL AS documentState,
                 CASE WHEN COALESCE(i.storage_status, '') != 'uploaded'
                     THEN COALESCE(i.storage_status, '') END AS storageStatus,
-                COALESCE(i.expense_type, '') AS expenseType
+                COALESCE(i.expense_type, '') AS expenseType,
+                COALESCE(i.paid_at, '') AS paidAt
             FROM invoice_amounts AS i
         )
     `;
@@ -257,6 +259,7 @@ function toRow(row: Row): InvoiceListRow {
         documentState,
         storageStatus: row.storageStatus === null || row.storageStatus === undefined ? null : String(row.storageStatus),
         expenseType: String(row.expenseType ?? ''),
+        paidAt: String(row.paidAt ?? '').slice(0, 10),
     };
 }
 

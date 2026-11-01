@@ -572,16 +572,13 @@
         if (invoice) startClone(invoice);
     }
 
-    async function requestRemoveMany(selection: InvoiceSelection): Promise<void> {
+    /** Resolves a selection and what removing it does, so a dialog or the dock's own confirm can run it. */
+    async function prepareRemoval(selection: InvoiceSelection) {
         const ids = await resolveSelectionIds(selection);
-        if (!ids.length) return;
+        if (!ids.length) return null;
         const invoices = await queryDatabase((repositories) => repositories.invoices.getInvoicesByIds(ids));
         const numbers = invoices.map((invoice) => invoice.invoice_number);
-        confirmTitle = ids.length === 1 ? 'Delete invoice?' : `Delete ${ids.length} invoices?`;
-        confirmMessage = ids.length === 1
-            ? `Remove invoice "${numbers[0] ?? ''}"?`
-            : `Remove these ${ids.length} invoices: ${numbers.slice(0, 10).join(', ')}${numbers.length > 10 ? ', …' : ''}?`;
-        confirmAction = async () => {
+        const run = async () => {
             const events = ids.map((id) => ({
                 id: crypto.randomUUID(),
                 type: 'INVOICE_REMOVED',
@@ -597,7 +594,30 @@
             }));
             notify.success(ids.length === 1 ? 'Invoice removed' : `${ids.length} invoices removed`);
         };
+        return { ids, numbers, run };
+    }
+
+    /** Row and drawer actions ask in a dialog. */
+    async function requestRemoveMany(selection: InvoiceSelection): Promise<void> {
+        const removal = await prepareRemoval(selection);
+        if (!removal) return;
+        const { ids, numbers } = removal;
+        confirmTitle = ids.length === 1 ? 'Delete invoice?' : `Delete ${ids.length} invoices?`;
+        confirmMessage = ids.length === 1
+            ? `Remove invoice "${numbers[0] ?? ''}"?`
+            : `Remove these ${ids.length} invoices: ${numbers.slice(0, 10).join(', ')}${numbers.length > 10 ? ', …' : ''}?`;
+        confirmAction = removal.run;
         showConfirmDialog = true;
+    }
+
+    /** The selection dock has already asked, so this removes straight away. */
+    async function removeConfirmed(selection: InvoiceSelection): Promise<void> {
+        try {
+            await (await prepareRemoval(selection))?.run();
+        } catch (error) {
+            console.error('Failed to remove invoices:', error);
+            notify.error('Could not remove the selected invoices');
+        }
     }
 
     function requestRemove(invoice: Invoice): void {
@@ -743,7 +763,7 @@
                 onRemove={(row) => void requestRemoveMany({ ids: [row.id], filters: emptyInvoiceFilters(), excludedIds: [], rows: [row], count: 1, pageRows: 1 })}
                 onViewPdf={showInvoicePdf}
                 onMarkPaid={markInvoicesPaid}
-                onDelete={(selection) => void requestRemoveMany(selection)}
+                onDelete={(selection) => void removeConfirmed(selection)}
                 onCreate={() => isAddingInvoice = true}
                 onImport={startImportInvoice}
             />

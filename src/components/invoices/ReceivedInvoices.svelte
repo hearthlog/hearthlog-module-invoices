@@ -657,6 +657,12 @@
         };
     }
 
+    /** The selection dock has already asked, so this removes straight away. */
+    async function removeSelection(selection: InvoiceSelection): Promise<void> {
+        if (!commandActionsAvailable()) return;
+        await removeMany(await resolveSelectionIds(selection));
+    }
+
     async function markReceivedPaid(selection: InvoiceSelection): Promise<boolean> {
         if (!commandActionsAvailable()) return false;
         try {
@@ -887,7 +893,8 @@
         actions={actionsMenu}
         onSelect={(row) => selectInvoice(row)}
         onMarkPaid={markReceivedPaid}
-        onDelete={(selection) => void requestRemoval(selection)}
+        onDelete={(selection) => void removeSelection(selection)}
+        deleteLabel="Remove"
         onCreate={openCreate}
         createLabel="Upload invoice"
         showExpenseType

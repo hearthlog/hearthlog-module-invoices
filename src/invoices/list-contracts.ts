@@ -29,6 +29,8 @@ export interface InvoiceListRow {
     storageStatus: string | null;
     /** A received invoice's expense type, or '' when not set; always '' for issued invoices. */
     expenseType: string;
+    /** The day a received invoice was marked paid, or '' (issued invoices do not record one). */
+    paidAt: string;
 }
 
 export interface DateRange {

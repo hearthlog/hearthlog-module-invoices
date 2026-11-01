@@ -192,6 +192,7 @@
         issueDate={invoice.issue_date}
         dueDate={invoice.due_date}
         taxPointDate={invoice.tax_point_date}
+        {status}
     /></div>
 
     <section class="grid gap-3 max-md:hidden sm:grid-cols-2" aria-label="Invoice parties">
