@@ -22,9 +22,9 @@
     } = $props();
 </script>
 
-<div class="min-w-0 rounded-xl bg-[var(--stor-surface-muted)] p-3">
+<div class="min-w-0 rounded-[14px] bg-[var(--stor-surface-muted)] p-3.5 shadow-[inset_0_0_0_1px_var(--stor-border)]">
     <p
-        class="text-xs font-medium uppercase tracking-wide text-[var(--stor-muted-text)]"
+        class="stor-overline"
     >
         {label}
     </p>

@@ -1,11 +1,12 @@
 <script lang="ts">
-    import IconAccountGroup from '~icons/mdi/account-multiple-outline';
-    import { EmptyState } from "@hearthlog/sdk/ui";
+    import IconSearch from '~icons/mdi/magnify';
+    import IconContentCopy from '~icons/mdi/content-copy';
+    import IconArrowDown from '~icons/mdi/arrow-down';
+    import IconArrowUp from '~icons/mdi/arrow-up';
+    import IconUnfoldMore from '~icons/mdi/unfold-more-horizontal';
     import { DataPlaceholder } from "@hearthlog/sdk/ui";
     import { Button } from "@hearthlog/sdk/ui";
     import { Drawer } from "@hearthlog/sdk/ui";
-    import { Field } from "@hearthlog/sdk/ui";
-    import { Input } from "@hearthlog/sdk/ui";
     import { CommandConfirmDialog } from "@hearthlog/sdk/ui";
     import InvoiceDetailCard from './InvoiceDetailCard.svelte';
     import InvoicePartyForm from './InvoicePartyForm.svelte';
@@ -42,6 +43,11 @@
     } = $props();
 
     let search = $state('');
+    type PartyScope = 'all' | 'customer' | 'supplier' | 'unused';
+    type PartySortKey = 'name' | 'ico' | 'city' | 'customer' | 'supplier';
+    let scope = $state<PartyScope>('all');
+    let sortKey = $state<PartySortKey>('name');
+    let sortDesc = $state(false);
     let editor = $state<
         { mode: 'create' } | { mode: 'edit'; party: InvoicePartySource } | null
     >(null);
@@ -162,6 +168,73 @@
         );
     });
 
+    const isUnused = (party: InvoicePartySource): boolean => usageCount(party) === 0;
+    const SCOPES: Array<{ id: PartyScope; label: string; test: (party: InvoicePartySource) => boolean }> = [
+        { id: 'all', label: 'All', test: () => true },
+        { id: 'customer', label: 'Customers', test: (party) => (usage.get(party.id)?.customer ?? 0) > 0 },
+        { id: 'supplier', label: 'Suppliers', test: (party) => (usage.get(party.id)?.supplier ?? 0) > 0 },
+        { id: 'unused', label: 'Unused', test: isUnused },
+    ];
+    const scopeCounts = $derived(
+        Object.fromEntries(SCOPES.map((entry) => [entry.id, filtered.filter(entry.test).length])) as Record<PartyScope, number>,
+    );
+
+    function sortValue(party: InvoicePartySource, key: PartySortKey): string | number {
+        switch (key) {
+            case 'customer': return usage.get(party.id)?.customer ?? 0;
+            case 'supplier': return usage.get(party.id)?.supplier ?? 0;
+            case 'ico': return party.ico ?? '';
+            case 'city': return party.city ?? '';
+            default: return party.name;
+        }
+    }
+
+    /** Filtered by the scope tab and ordered by the chosen column; empty values sort last. */
+    const rows = $derived.by(() => {
+        const test = SCOPES.find((entry) => entry.id === scope)?.test ?? (() => true);
+        const direction = sortDesc ? -1 : 1;
+        return filtered.filter(test).sort((left, right) => {
+            const a = sortValue(left, sortKey);
+            const b = sortValue(right, sortKey);
+            if (typeof a === 'number' && typeof b === 'number') return (a - b) * direction || left.name.localeCompare(right.name, 'cs-CZ');
+            if (!a && b) return 1;
+            if (a && !b) return -1;
+            return String(a).localeCompare(String(b), 'cs-CZ') * direction;
+        });
+    });
+
+    const duplicateIds = $derived(new Set(duplicateGroups.flat().map((party) => party.id)));
+
+    const SORT_COLUMNS: Array<{ key: PartySortKey; label: string; right: boolean }> = [
+        { key: 'name', label: 'Name', right: false },
+        { key: 'ico', label: 'IČO', right: false },
+        { key: 'city', label: 'Address', right: false },
+        { key: 'customer', label: 'As customer', right: true },
+        { key: 'supplier', label: 'As supplier', right: true },
+    ];
+
+    function sortBy(key: PartySortKey): void {
+        if (sortKey === key) sortDesc = !sortDesc;
+        else {
+            sortKey = key;
+            sortDesc = key === 'customer' || key === 'supplier';
+        }
+    }
+
+    function initials(name: string): string {
+        return name
+            .replace(/[,.]/g, ' ')
+            .split(/\s+/)
+            .filter((word) => word && !/^(s|r|o|a|a\.s|spol|ltd|gmbh)$/i.test(word))
+            .slice(0, 2)
+            .map((word) => word[0]!.toLocaleUpperCase('cs-CZ'))
+            .join('');
+    }
+
+    function sortState(key: PartySortKey): 'ascending' | 'descending' | 'none' {
+        return sortKey === key ? (sortDesc ? 'descending' : 'ascending') : 'none';
+    }
+
     /** The details drawer's invoice references, one line per slot. */
     const selectedUsage = $derived.by((): string[] => {
         const party = selected;
@@ -272,82 +345,57 @@
         <DataPlaceholder rows={5} label="Loading parties" />
     </section>
 {:else}
-    <section class="stor-panel p-[var(--stor-panel-padding)]" aria-label="Party filters">
-        <div class="stor-panel-header-flush flex flex-wrap items-end gap-x-4 gap-y-3">
-            <div class="min-w-0 flex-1">
-                <h2 class="stor-panel-title">Parties</h2>
-                <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
-                    One company record serves both invoice slots · {active.length} record{active.length === 1 ? '' : 's'}
-                </p>
+    <section class="stor-panel" style:overflow="visible" aria-label="Party directory">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2.5 px-[var(--stor-panel-padding)] py-3.5">
+            <label class="flex h-10 w-full max-w-[19rem] items-center gap-2.5 rounded-[10px] border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-[var(--stor-muted-text)] focus-within:ring-2 focus-within:ring-[var(--stor-focus)]">
+                <IconSearch class="h-4 w-4 shrink-0" />
+                <input id="party-search" type="search" aria-label="Search parties" placeholder="Name, IČO, city…" bind:value={search} class="min-w-0 flex-1 bg-transparent text-sm text-[var(--stor-ink)] outline-none placeholder:text-[var(--stor-muted-text)]" />
+            </label>
+            <div class="stor-segmented-control flex items-center" role="group" aria-label="Show parties used as">
+                {#each SCOPES as entry (entry.id)}
+                    <button type="button" aria-pressed={scope === entry.id} onclick={() => (scope = entry.id)} class="stor-segmented-option whitespace-nowrap">
+                        {entry.label}<span class="stor-tab-count ml-1.5">{scopeCounts[entry.id]}</span>
+                    </button>
+                {/each}
             </div>
-            <div class="w-full sm:w-64">
-                <Field label="Search" htmlFor="party-search">
-                    <Input id="party-search" placeholder="Name, IČO, city…" bind:value={search} />
-                </Field>
-            </div>
+            <span class="ml-auto text-sm text-[var(--stor-muted-text)]" role="status">{rows.length} of {active.length} parties</span>
             {#if editor?.mode !== 'create'}
                 <Button size="sm" onclick={() => (editor = { mode: 'create' })}>Add party</Button>
             {/if}
         </div>
-    </section>
-
-    {#if duplicateGroups.length}
-        <section class="stor-panel" aria-label="Possible duplicate parties">
-            <div class="stor-panel-header stor-panel-header-rule">
-                <div class="min-w-0">
-                    <h2 class="stor-panel-title">Possible duplicates</h2>
-                    <p class="mt-0.5 text-xs text-[var(--stor-muted-text)]">
-                        Records sharing an IČO or name · merge keeps one record and points the rest at it
-                    </p>
-                </div>
-            </div>
-            <div class="space-y-3 px-[var(--stor-panel-padding)] pb-[var(--stor-panel-padding)]">
+        {#if duplicateGroups.length}
+            <div class="mx-[var(--stor-panel-padding)] mb-3.5 flex flex-col gap-2" aria-label="Possible duplicate parties">
                 {#each duplicateGroups as group (group[0]?.id)}
-                    <div class="rounded-xl bg-[var(--stor-surface-muted)] p-3">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <p class="text-sm font-semibold text-[var(--stor-ink)]">
-                                {group.length} records · {group[0]?.name}
-                            </p>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onclick={() =>
-                                    (merge = {
-                                        members: group,
-                                        survivorId:
-                                            [...group].sort(
-                                                (left, right) =>
-                                                    usageCount(right) - usageCount(left),
-                                            )[0]!.id,
-                                    })}
-                            >
-                                Merge…
-                            </Button>
-                        </div>
-                        <ul class="mt-2 space-y-1 text-xs text-[var(--stor-muted-text)]">
-                            {#each group as member (member.id)}
-                                <li>
-                                    {member.name}{#if member.ico} · IČO {member.ico}{/if}
-                                    {#if member.city} · {member.city}{/if}
-                                    · {usageLabel(member)}
-                                </li>
-                            {/each}
-                        </ul>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-[var(--stor-warning-soft,var(--stor-surface-muted))] px-3.5 py-3 text-sm">
+                        <IconContentCopy class="h-4 w-4 shrink-0 text-[var(--stor-warning)]" />
+                        <span class="min-w-0 flex-1 text-[var(--stor-ink)]">
+                            <strong class="font-semibold">{group.length} records look like one company.</strong>
+                            <span class="text-[var(--stor-muted-text)]">{group.map((member) => member.name).join(' · ')}{#if group[0]?.ico} share IČO {group[0].ico}{/if}</span>
+                        </span>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onclick={() =>
+                                (merge = {
+                                    members: group,
+                                    survivorId: [...group].sort((left, right) => usageCount(right) - usageCount(left))[0]!.id,
+                                })}
+                        >
+                            Review and merge
+                        </Button>
                     </div>
                 {/each}
             </div>
-        </section>
-    {/if}
-
+        {/if}
     {#if merge}
-        <section class="stor-panel p-[var(--stor-panel-padding)]" aria-label="Merge parties">
+        <section class="mx-[var(--stor-panel-padding)] mb-3.5 rounded-xl bg-[var(--stor-surface-muted)] p-4" aria-label="Merge parties">
             <h2 class="stor-panel-title">Merge duplicate parties</h2>
             <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
                 Choose the record to keep. The others become aliases, and existing invoices still resolve.
             </p>
             <div class="mt-3 space-y-2">
                 {#each merge.members as member (member.id)}
-                    <label class="flex items-start gap-2 rounded-xl border border-[var(--stor-border)] p-3 text-sm">
+                    <label class="flex items-start gap-2 rounded-xl bg-[var(--stor-surface)] p-3 text-sm shadow-[var(--stor-shadow-sm)]">
                         <input
                             type="radio"
                             name="merge-survivor"
@@ -373,61 +421,85 @@
         </section>
     {/if}
 
-    {#if active.length === 0}
-        <EmptyState
-            icon={IconAccountGroup}
-            title="No parties yet"
-            description="Add the companies you bill or buy from; one record serves both sides of an invoice."
-        />
-    {:else if filtered.length === 0}
-        <EmptyState
-            icon={IconAccountGroup}
-            title="No matching parties"
-            description="Adjust the search to find a company."
-        />
+    {#if rows.length === 0}
+        <div class="border-t border-[var(--stor-border)] px-6 py-12 text-center">
+            <p class="font-semibold text-[var(--stor-ink)]">{active.length === 0 ? 'No parties yet' : 'No matching parties'}</p>
+            <p class="mt-1 text-sm text-[var(--stor-muted-text)]">
+                {active.length === 0
+                    ? 'Add the companies you bill or buy from; one record serves both sides of an invoice.'
+                    : 'Adjust the search or the filter to find a company.'}
+            </p>
+        </div>
     {:else}
-        <section class="stor-panel" aria-label="Party directory">
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[46rem] border-collapse text-left text-sm" aria-label="Party directory">
-                    <thead class="bg-[var(--stor-surface-muted)] text-xs text-[var(--stor-muted-text)]">
-                        <tr>
-                            <th scope="col" class="px-3 py-3">Name</th>
-                            <th scope="col" class="px-3 py-3">IČO</th>
-                            <th scope="col" class="px-3 py-3">Address</th>
-                            <th scope="col" class="px-3 py-3">Used as</th>
-                            <th scope="col" class="px-3 py-3 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-[var(--stor-border)]">
-                        {#each filtered as party (party.id)}
-                            <tr>
-                                <td class="px-3 py-3">
-                                    <button
-                                        type="button"
-                                        data-party-open={party.id}
-                                        aria-label={`View party ${party.name}`}
-                                        aria-current={selectedId === party.id ? 'true' : undefined}
-                                        onclick={() => (selectedId = party.id)}
-                                        class="text-left font-semibold text-[var(--stor-ink)] hover:underline"
-                                    >
-                                        {party.name}
-                                        {#if party.dic}<span class="ml-1 text-xs text-[var(--stor-muted-text)]">DIČ {party.dic}</span>{/if}
-                                    </button>
-                                </td>
-                                <td class="whitespace-nowrap px-3 py-3 tabular-nums text-[var(--stor-muted-text)]">{party.ico || '—'}</td>
-                                <td class="px-3 py-3 text-[var(--stor-muted-text)]">{[party.street, party.city].filter(Boolean).join(', ') || '—'}</td>
-                                <td class="whitespace-nowrap px-3 py-3 text-[var(--stor-muted-text)]">{usageLabel(party)}</td>
-                                <td class="whitespace-nowrap px-3 py-3 text-right">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[56rem] table-fixed border-collapse text-left text-sm" aria-label="Party directory">
+                <colgroup>
+                    <col />
+                    <col class="w-28" />
+                    <col class="w-[15rem]" />
+                    <col class="w-28" />
+                    <col class="w-28" />
+                    <col class="w-48" />
+                </colgroup>
+                <thead class="stor-overline bg-[var(--stor-surface-muted)]">
+                    <tr class="h-[38px]">
+                        {#each SORT_COLUMNS as column (column.key)}
+                            <th scope="col" class="border-y border-[var(--stor-border)] px-4 {column.right ? 'text-right' : ''}" aria-sort={sortState(column.key)}>
+                                <button type="button" onclick={() => sortBy(column.key)} class="inline-flex items-center gap-1 font-[inherit] [text-transform:inherit] hover:text-[var(--stor-accent-strong)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]" aria-label={`Sort by ${column.label}`}>
+                                    {column.label}
+                                    {#if sortKey === column.key}
+                                        {#if sortDesc}<IconArrowDown class="h-3.5 w-3.5" />{:else}<IconArrowUp class="h-3.5 w-3.5" />{/if}
+                                    {:else}<IconUnfoldMore class="h-3.5 w-3.5 opacity-50" />{/if}
+                                </button>
+                            </th>
+                        {/each}
+                        <th scope="col" class="border-y border-[var(--stor-border)] px-4"><span class="sr-only">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_55%,transparent)]">
+                    {#each rows as party (party.id)}
+                        {@const entry = usage.get(party.id)}
+                        <tr class="group h-16 transition-colors hover:bg-[var(--stor-surface-muted)]/70 {selectedId === party.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
+                            <td class="px-4 py-2">
+                                <button
+                                    type="button"
+                                    data-party-open={party.id}
+                                    aria-label={`View party ${party.name}`}
+                                    aria-current={selectedId === party.id ? 'true' : undefined}
+                                    onclick={() => (selectedId = party.id)}
+                                    class="flex w-full min-w-0 items-center gap-3 text-left"
+                                >
+                                    <span class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--stor-surface-muted)] text-xs font-semibold tracking-wide text-[var(--stor-muted-text)] shadow-[inset_0_0_0_1px_var(--stor-border)]" aria-hidden="true">{initials(party.name)}</span>
+                                    <span class="flex min-w-0 flex-col">
+                                        <span class="truncate font-medium text-[var(--stor-ink)] group-hover:underline group-hover:decoration-[var(--stor-border-strong)] group-hover:underline-offset-4">
+                                            {party.name}
+                                            {#if duplicateIds.has(party.id)}<span class="ml-2 rounded-full bg-[var(--stor-warning-soft,var(--stor-surface-muted))] px-1.5 py-0.5 align-[1px] text-[11px] font-semibold text-[var(--stor-warning)]">Duplicate?</span>{/if}
+                                        </span>
+                                        <span class="truncate text-xs text-[var(--stor-muted-text)]">{party.dic ? `DIČ ${party.dic}` : 'No VAT ID'}</span>
+                                    </span>
+                                </button>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-2 tabular-nums text-[var(--stor-muted-text)]">{party.ico || '—'}</td>
+                            <td class="px-4 py-2">
+                                <span class="block truncate">{party.street || '—'}</span>
+                                {#if party.city}<span class="block truncate text-xs text-[var(--stor-muted-text)]">{party.city}</span>{/if}
+                            </td>
+                            <td class="px-4 py-2 text-right tabular-nums {entry?.customer ? 'font-semibold' : 'text-[var(--stor-faint-text)]'}">{entry?.customer || '—'}</td>
+                            <td class="px-4 py-2 text-right tabular-nums {entry?.supplier ? 'font-semibold' : 'text-[var(--stor-faint-text)]'}">{entry?.supplier || '—'}</td>
+                            <td class="px-4 py-2 text-right">
+                                <div class="flex justify-end gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
                                     <Button variant="secondary" size="sm" onclick={() => (editor = { mode: 'edit', party })}>Edit</Button>
                                     <Button variant="secondary" size="sm" onclick={() => (removal = party)}>Remove</Button>
-                                </td>
-                            </tr>
-                        {/each}
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                                </div>
+                            </td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+        </div>
     {/if}
+    <p class="border-t border-[var(--stor-border)] px-[var(--stor-panel-padding)] py-3 text-xs text-[var(--stor-muted-text)]">One company record serves both invoice slots. Issued documents keep the details they were saved with.</p>
+    </section>
 {/if}
 
 <Drawer

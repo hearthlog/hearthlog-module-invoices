@@ -31,14 +31,14 @@
 </script>
 
 <section aria-label="Line items">
-    <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Line items</h3>
+    <h3 class="flex items-baseline justify-between text-[17px] font-medium tracking-tight text-[var(--stor-ink)]">Line items<small class="text-xs font-normal text-[var(--stor-faint-text)]">{items.length} item{items.length === 1 ? '' : 's'}</small></h3>
     {#if items.length > 0}
         <div
-            class="mt-2 overflow-hidden rounded-xl bg-[var(--stor-surface-muted)]"
+            class="mt-2 overflow-hidden"
         >
             <table class="w-full text-left text-sm">
                 <thead>
-                    <tr class="text-xs text-[var(--stor-muted-text)]">
+                    <tr class="stor-overline border-b border-[var(--stor-border)]">
                         <th class="px-3 py-2 font-medium">Item</th>
                         <th
                             class="hidden px-3 py-2 text-right font-medium sm:table-cell"
@@ -95,7 +95,7 @@
             </table>
         </div>
 
-        <dl class="mt-3 space-y-1 text-sm">
+        <dl class="ml-auto mt-3 w-full max-w-[18rem] space-y-1 text-sm">
             <div class="flex justify-between gap-3">
                 <dt class="text-[var(--stor-muted-text)]">
                     Subtotal (excl. VAT)
@@ -113,9 +113,9 @@
                 </div>
             {/each}
             <div
-                class="flex justify-between gap-3 border-t border-[var(--stor-border)] pt-2 font-semibold text-[var(--stor-ink)]"
+                class="mt-1 flex justify-between gap-3 border-t border-[var(--stor-border)] pt-2.5 text-[15px] font-semibold text-[var(--stor-ink)]"
             >
-                <dt>Total</dt>
+                <dt>Payable</dt>
                 <dd class="tabular-nums">{formatInvoiceAmount(total)}</dd>
             </div>
         </dl>

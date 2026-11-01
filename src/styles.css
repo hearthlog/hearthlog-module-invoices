@@ -40,3 +40,24 @@
     /* A fade on the trailing edge shows the row scrolls; end padding lets the last filter clear it. */
     .stor-invoice-status-filters { padding-inline-end: 28px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
 }
+
+/* Party monogram tile used in the invoice and party tables. */
+.stor-monogram { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--stor-surface-muted); box-shadow: inset 0 0 0 1px var(--stor-border); color: var(--stor-muted-text); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+[aria-selected="true"] .stor-monogram, tr:has(input[type="checkbox"]:checked) .stor-monogram { background: var(--stor-surface); color: var(--stor-accent-strong); }
+
+/* Rounded checkbox that fills with the action colour; the selection dock appears once one is ticked. */
+table[aria-label="Invoices"] input[type="checkbox"], table[aria-label="Received invoices"] input[type="checkbox"], [data-invoice-phone-list] input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none; flex: none; width: 20px; height: 20px; margin: 0; border-radius: 7px; cursor: pointer;
+    background: var(--stor-surface-well, var(--stor-surface)) center / 14px no-repeat; box-shadow: inset 0 0 0 1.5px var(--stor-border-strong);
+    transition: background-color 0.12s, box-shadow 0.12s;
+}
+table[aria-label="Invoices"] input[type="checkbox"]:hover, table[aria-label="Received invoices"] input[type="checkbox"]:hover { box-shadow: inset 0 0 0 1.5px var(--stor-muted-text); }
+table[aria-label="Invoices"] input[type="checkbox"]:checked, table[aria-label="Received invoices"] input[type="checkbox"]:checked, [data-invoice-phone-list] input[type="checkbox"]:checked {
+    background-color: var(--stor-accent-strong); box-shadow: 0 1px 2px color-mix(in srgb, var(--stor-ink) 25%, transparent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5l4 4L18.5 8'/%3E%3C/svg%3E");
+}
+table[aria-label="Invoices"] input[type="checkbox"]:indeterminate, table[aria-label="Received invoices"] input[type="checkbox"]:indeterminate {
+    background-color: var(--stor-accent-strong);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E");
+}
+table[aria-label="Invoices"] input[type="checkbox"]:focus-visible, table[aria-label="Received invoices"] input[type="checkbox"]:focus-visible { outline: 2px solid var(--stor-focus); outline-offset: 2px; }

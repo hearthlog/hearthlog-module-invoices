@@ -28,6 +28,7 @@
     import { browser } from '$app/env';
     import InvoiceAmountRange from './InvoiceAmountRange.svelte';
     import InvoiceDateRange from './InvoiceDateRange.svelte';
+    import InvoiceSelectionDock from './InvoiceSelectionDock.svelte';
     import { createInvoiceListColumnHelper, createInvoiceListTable } from '../../invoices/list-table.js';
     import { EXPENSE_TYPES, expenseTypeLabel } from '../../invoices/expense-types.js';
 
@@ -44,7 +45,7 @@
         type NumberRange,
     } from '../../invoices/list-contracts.js';
     import { invoiceRouteFromUrl, invoiceRouteState, syncInvoiceListRoute } from '../../invoices/url.js';
-    import { formatInvoiceDate } from '../../invoices/format.js';
+    import { dueRelative, formatInvoiceDate, partyInitials } from '../../invoices/format.js';
 
     let {
         direction,
@@ -67,6 +68,7 @@
         onImport,
         overdueCount = 0,
         createLabel = 'Create invoice',
+        deleteLabel = 'Delete',
         showExpenseType = false,
         toolbar,
 
@@ -95,6 +97,8 @@
         onImport?: () => void;
         overdueCount?: number;
         createLabel?: string;
+        /** The dock's destructive action: Delete for issued, Remove for received. */
+        deleteLabel?: string;
         /** Received invoices: adds the expense type column and filter. */
         showExpenseType?: boolean;
         /** Extra actions beside the result count. */
@@ -317,6 +321,31 @@
     const dueDates = $derived(queryResult?.dueDates ?? []);
     const taxPointDates = $derived(queryResult?.taxPointDates ?? []);
 
+    /** Under the Issued sort the page reads by month; any other sort stays one flat run. */
+    const rowGroups = $derived.by(() => {
+        if (currentSort.id !== 'issued') return [{ key: 'all', title: '', sum: '', rows: visibleRows }];
+        const groups: Array<{ key: string; title: string; sum: string; rows: InvoiceListRow[] }> = [];
+        for (const row of visibleRows) {
+            const key = row.issued.slice(0, 7) || 'none';
+            let group = groups[groups.length - 1];
+            if (!group || group.key !== key) {
+                const date = row.issued ? new Date(`${row.issued.slice(0, 7)}-01T12:00:00`) : null;
+                group = { key, title: date ? date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'No issue date', sum: '', rows: [] };
+                groups.push(group);
+            }
+            group.rows.push(row);
+        }
+        // A month's total is only honest when the page holds all of it, in one currency.
+        if (pageCount === 1) {
+            for (const group of groups) {
+                const currencies = new Set(group.rows.map((row) => row.currency));
+                if (currencies.size !== 1 || group.rows.some((row) => row.afterVat === null)) continue;
+                group.sum = money(group.rows.reduce((total, row) => total + (row.afterVat ?? 0), 0), group.rows[0]!.currency);
+            }
+        }
+        return groups;
+    });
+
     const helper = createInvoiceListColumnHelper<InvoiceListRow>();
     const columns = helper.columns([
         helper.accessor('invoiceNumber', { id: 'invoiceNumber' }),
@@ -378,6 +407,13 @@
         allMatching = true;
         excludedIds = [];
         selectedIds = [];
+    }
+
+    /** Back from "all matching" to just the rows on this page. */
+    function selectPage(): void {
+        allMatching = false;
+        excludedIds = [];
+        selectedIds = visibleRows.map((row) => row.id);
     }
 
     function clearSelection(): void {
@@ -564,6 +600,16 @@
     const statusChips = $derived([{ value: 'all', label: 'All' }, ...statusOptions.filter((option) => option.value !== 'all')]);
 </script>
 
+<svelte:window
+    onkeydown={(event) => {
+        if (event.key !== 'Escape' || !selectionCount || !isActive || event.defaultPrevented) return;
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('input[type="search"], input[type="text"], textarea, select, [role="dialog"]')) return;
+        selectMode = false;
+        clearSelection();
+    }}
+/>
+
 {#snippet sortHeader(id: string, label: string)}
     <button type="button" class="inline-flex items-center gap-1 font-[inherit] [text-transform:inherit] hover:text-[var(--stor-accent-strong)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
         onclick={() => table.getColumn(id)?.toggleSorting()} aria-label={`Sort by ${label}`}>
@@ -690,37 +736,6 @@
     </div>
 </Modal>
 
-{#if selectionCount}
-    {#if allMatching || pageFullySelected && matchCount > visibleRows.length}
-        <div
-            class="flex flex-wrap items-center gap-x-3 gap-y-1 bg-[var(--stor-surface-muted)] px-4 py-2 text-xs text-[var(--stor-muted-text)]"
-            role="status"
-        >
-            {#if allMatching}
-                <span>All {selectionCount} invoice{selectionCount === 1 ? '' : 's'} matching these filters are selected.</span>
-                <button type="button" onclick={clearSelection} class="font-semibold text-[var(--stor-accent-strong)] hover:underline">Clear selection</button>
-            {:else}
-                <span>All {visibleRows.length} rows on this page are selected.</span>
-                <button type="button" onclick={selectAllMatching} class="font-semibold text-[var(--stor-accent-strong)] hover:underline">Select all {matchCount} matching these filters</button>
-            {/if}
-        </div>
-    {/if}
-    <div class="sticky top-0 z-10 hidden flex-wrap items-center gap-x-6 gap-y-2 bg-[var(--stor-accent-soft)] px-4 py-3 text-sm lg:flex" aria-label="Selected invoice totals">
-        <strong>{selectionCount} selected</strong>
-        {#if queryLoading}<span class="text-[var(--stor-muted-text)]">Calculating totals…</span>{/if}
-        {#each queryLoading ? [] : summary.totals as totals}
-            <div><span class="text-[var(--stor-muted-text)]">Before VAT</span> <strong class="ml-1 tabular-nums">{money(totals.knownBefore ? totals.before : null, totals.currency)}</strong>{#if totals.missingBefore}<span class="ml-1 text-xs">({totals.missingBefore} unavailable)</span>{/if}</div>
-            <div><span class="text-[var(--stor-muted-text)]">After VAT</span> <strong class="ml-1 tabular-nums">{money(totals.knownAfter ? totals.after : null, totals.currency)}</strong>{#if totals.missingAfter}<span class="ml-1 text-xs">({totals.missingAfter} unavailable)</span>{/if}</div>
-        {/each}
-        <div class="ml-auto flex items-center gap-2">
-            <CommandOnly><button type="button" disabled={markingPaid || blockedCount > 0 || unpaidCount === 0} title={blockedCount ? `${blockedCount} selected invoice(s) need review` : undefined} onclick={markSelectedPaid} class="h-9 rounded-lg bg-[var(--stor-accent-strong)] px-3 font-semibold text-white disabled:opacity-50">Mark paid</button>
-            <button type="button" onclick={() => onDelete(selectionPayload())} class="h-9 rounded-lg px-3 font-semibold text-[var(--stor-negative)]">Delete</button></CommandOnly>
-            <button type="button" onclick={clearSelection} class="h-9 px-2 text-[var(--stor-accent-strong)]">Clear selection</button>
-        </div>
-        {#if blockedCount}<p class="w-full text-xs">{blockedCount} selected invoice(s) need review before they can be marked paid.</p>{/if}
-    </div>
-{/if}
-
 {#snippet invoiceIllustration()}
     <svg viewBox="0 0 120 84" class="h-[84px] w-[120px]" aria-hidden="true">
         <rect x="18" y="14" width="64" height="64" rx="8" fill="var(--stor-surface-muted)" stroke="var(--stor-border-strong)" stroke-width="1.5" />
@@ -785,18 +800,30 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_55%,transparent)]">
-                {#each visibleRows as row (row.id)}
-                    <tr class="group h-14 transition-colors hover:bg-[var(--stor-surface-muted)]/70 {isRowSelected(row.id) || activeId === row.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
+                {#each rowGroups as group (group.key)}
+                    {#if group.title}
+                        <tr class="h-12" aria-hidden="true">
+                            <td colspan={showExpenseType ? 9 : 8} class="px-3 pb-1 pt-4 align-bottom">
+                                <div class="flex items-baseline justify-between gap-3 pl-[3.25rem]">
+                                    <span class="font-[var(--stor-font-display,inherit)] text-[17px] tracking-tight text-[var(--stor-ink)]">{group.title}</span>
+                                    <span class="text-xs text-[var(--stor-muted-text)]">{#if group.sum}<strong class="font-semibold text-[var(--stor-ink)]">{group.sum}</strong> · {/if}{group.rows.length} invoice{group.rows.length === 1 ? '' : 's'}{#if pageCount > 1} on this page{/if}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {/if}
+                    {#each group.rows as row (row.id)}
+                    <tr class="group h-[62px] transition-colors hover:bg-[var(--stor-surface-muted)]/70 {isRowSelected(row.id) || activeId === row.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
                         <td class="px-3 py-2"><input type="checkbox" aria-label={`Select invoice ${row.invoiceNumber}`} checked={isRowSelected(row.id)} onchange={() => toggleRow(row.id)} /></td>
-                        <td class="max-w-[18rem] px-3 py-2"><button type="button" data-invoice-open={row.id} aria-current={activeId === row.id ? 'true' : undefined} aria-label={`${tableLabel === 'Invoices' ? 'View invoice' : 'View received invoice'} ${row.invoiceNumber}`} onclick={() => onSelect(row)} class="block max-w-full text-left hover:underline">{#if row.party}<span class="block truncate font-semibold text-[var(--stor-ink)]">{row.party}</span><span class="mt-0.5 block truncate text-xs tabular-nums text-[var(--stor-muted-text)]">{row.invoiceNumber}</span>{:else}<span class="block truncate font-semibold tabular-nums text-[var(--stor-ink)]">{row.invoiceNumber}</span><span class="mt-0.5 block truncate text-xs text-[var(--stor-muted-text)]">No {partyLabel.toLocaleLowerCase()}</span>{/if}</button>{#if row.storageStatus !== null && storageLabel}<span class="block text-xs text-[var(--stor-muted-text)]">{storageLabel(row.storageStatus)}</span>{/if}</td>
+                        <td class="max-w-[18rem] px-3 py-2"><button type="button" data-invoice-open={row.id} aria-current={activeId === row.id ? 'true' : undefined} aria-label={`${tableLabel === 'Invoices' ? 'View invoice' : 'View received invoice'} ${row.invoiceNumber}`} onclick={() => onSelect(row)} class="group/party flex w-full max-w-full items-center gap-3 text-left"><span class="stor-monogram" aria-hidden="true">{partyInitials(row.party || row.invoiceNumber) || '·'}</span><span class="flex min-w-0 flex-col">{#if row.party}<span class="truncate font-medium text-[var(--stor-ink)] group-hover/party:underline group-hover/party:decoration-[var(--stor-border-strong)] group-hover/party:underline-offset-4">{row.party}</span><span class="truncate text-xs tabular-nums text-[var(--stor-muted-text)]">{row.invoiceNumber}{#if row.storageStatus !== null && storageLabel && row.storageStatus !== 'uploaded'}<span class="text-[var(--stor-warning)]"> · {storageLabel(row.storageStatus)}</span>{/if}</span>{:else}<span class="truncate font-medium tabular-nums text-[var(--stor-ink)] group-hover/party:underline">{row.invoiceNumber}</span><span class="truncate text-xs text-[var(--stor-muted-text)]">No {partyLabel.toLocaleLowerCase()}</span>{/if}</span></button></td>
                         <td class="whitespace-nowrap px-3 py-2 tabular-nums">{formatInvoiceDate(row.issued)}</td>
-                        <td class="whitespace-nowrap px-3 py-2 tabular-nums">{formatInvoiceDate(row.due)}</td>
+                        <td class="whitespace-nowrap px-3 py-2 tabular-nums">{formatInvoiceDate(row.due)}{#if row.status === 'paid' && row.paidAt}<span class="block text-xs leading-4 font-medium text-[var(--stor-positive)]">Paid {formatInvoiceDate(row.paidAt).slice(0, -5)}</span>{:else if dueRelative(row.due, today, row.status)}{@const rel = dueRelative(row.due, today, row.status)}<span class="block text-xs leading-4 font-medium {rel?.late ? 'font-semibold text-[var(--stor-negative)]' : 'text-[var(--stor-muted-text)]'}">{rel?.text}</span>{/if}</td>
                         <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{money(row.beforeVat, row.currency)}</td>
                         <td class="whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums">{money(row.afterVat, row.currency)}</td>
                         {#if showExpenseType}<td class="truncate px-3 py-2 text-xs text-[var(--stor-muted-text)]">{expenseTypeLabel(row.expenseType) || '—'}</td>{/if}
                         <td class="px-3 py-2">{@render statusBadge(row)}</td>
                         <td class="px-3 py-2 text-right"><div class="flex justify-end opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">{@render actions(row)}</div></td>
                     </tr>
+                {/each}
                 {/each}
             </tbody>
         </table>
@@ -832,13 +859,24 @@
 {/if}
 
 {#if selectionCount}
-    <div class="fixed inset-x-2 bottom-[calc(var(--stor-mobile-bottom-inset)+var(--stor-mobile-nav-height)+2*var(--stor-mobile-stack-gap)+var(--stor-mobile-action-height))] z-30 rounded-xl bg-[var(--stor-surface)] p-3 shadow-[var(--stor-elevation-3)] lg:hidden" aria-label="Selected invoice totals">
-        <div class="flex items-center justify-between"><strong>{selectionCount} selected</strong><button type="button" onclick={() => { selectMode = false; clearSelection(); }} class="min-h-11 text-sm text-[var(--stor-accent-strong)]">Cancel</button></div>
-        {#if queryLoading}<span class="mt-2 block text-sm text-[var(--stor-muted-text)]">Calculating totals…</span>{/if}
-        {#each queryLoading ? [] : summary.totals as totals}
-            <div class="mt-2 grid grid-cols-2 gap-3 text-sm"><div><span class="block text-xs text-[var(--stor-muted-text)]">Before VAT</span><strong class="tabular-nums">{money(totals.knownBefore ? totals.before : null, totals.currency)}</strong>{#if totals.missingBefore}<span class="block text-xs">{totals.missingBefore} unavailable</span>{/if}</div><div><span class="block text-xs text-[var(--stor-muted-text)]">After VAT</span><strong class="tabular-nums">{money(totals.knownAfter ? totals.after : null, totals.currency)}</strong>{#if totals.missingAfter}<span class="block text-xs">{totals.missingAfter} unavailable</span>{/if}</div></div>
-        {/each}
-        {#if blockedCount}<p class="mt-2 text-xs">{blockedCount} selected invoice(s) need review before marking paid.</p>{/if}
-        <CommandOnly><div class="mt-3 grid grid-cols-2 gap-2"><button type="button" disabled={markingPaid || blockedCount > 0 || unpaidCount === 0} onclick={markSelectedPaid} class="h-11 rounded-lg bg-[var(--stor-accent-strong)] font-semibold text-white disabled:opacity-50">Mark paid</button><button type="button" onclick={() => onDelete(selectionPayload())} class="h-11 rounded-lg bg-[var(--stor-negative-soft)] font-semibold text-[var(--stor-negative)]">Delete</button></div></CommandOnly>
-    </div>
+    <InvoiceSelectionDock
+        count={selectionCount}
+        {allMatching}
+        {pageFullySelected}
+        pageRows={visibleRows.length}
+        {matchCount}
+        excludedCount={excludedIds.length}
+        totals={summary.totals}
+        totalsLoading={queryLoading}
+        blocked={blockedCount}
+        unpaid={unpaidCount}
+        {markingPaid}
+        {deleteLabel}
+        {money}
+        onSelectPage={selectPage}
+        onSelectAll={selectAllMatching}
+        onMarkPaid={markSelectedPaid}
+        onDelete={() => onDelete(selectionPayload())}
+        onClear={() => { selectMode = false; clearSelection(); }}
+    />
 {/if}
