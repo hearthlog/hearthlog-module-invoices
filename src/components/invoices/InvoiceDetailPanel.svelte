@@ -32,6 +32,7 @@
     interface InvoiceLineItem {
         description: string;
         quantity: number;
+        unit?: string;
         unitPrice: number;
         vatRate: number;
     }
@@ -230,7 +231,7 @@
             <ul class="pb-3">
                 {#each lineItems as item, index (index)}
                     <li class="flex items-baseline justify-between gap-3 py-1.5 text-sm">
-                        <span class="min-w-0"><span class="block text-[var(--stor-ink)]">{item.description}</span><span class="block text-xs text-[var(--stor-muted-text)]">{item.quantity} × {formatMoney(item.unitPrice)} · VAT {item.vatRate} %</span></span>
+                        <span class="min-w-0"><span class="block text-[var(--stor-ink)]">{item.description}</span><span class="block text-xs text-[var(--stor-muted-text)]">{item.quantity}{item.unit ? ` ${item.unit}` : ""} × {formatMoney(item.unitPrice)} · VAT {item.vatRate} %</span></span>
                         <span class="shrink-0 font-semibold tabular-nums text-[var(--stor-ink)]">{formatMoney(item.net)}</span>
                     </li>
                 {/each}

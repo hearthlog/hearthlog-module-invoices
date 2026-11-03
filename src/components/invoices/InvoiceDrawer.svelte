@@ -46,6 +46,8 @@
     export interface InvoiceLineItemDraft {
         description: string;
         quantity: number;
+        /** Free-text unit printed after the quantity (e.g. HOD); empty means none. */
+        unit: string;
         unitPrice: number;
         vatRate: number;
     }
@@ -100,6 +102,7 @@
         return {
             description: "",
             quantity: 1,
+            unit: "",
             unitPrice: 0,
             vatRate: DEFAULT_VAT_RATE,
         };
@@ -110,7 +113,10 @@
         try {
             const parsed = JSON.parse(itemsJson);
             return Array.isArray(parsed) && parsed.length > 0
-                ? parsed
+                ? parsed.map((item) => ({
+                      ...item,
+                      unit: typeof item.unit === "string" ? item.unit : "",
+                  }))
                 : [createEmptyItem()];
         } catch {
             return [createEmptyItem()];
@@ -503,10 +509,10 @@
     }
 
     function addItem() {
-        // Phones start a new row from the last one's price and VAT; a second month of the same work is two taps.
+        // Phones start a new row from the last one's unit, price and VAT; a second month of the same work is two taps.
         const last = form.items[form.items.length - 1];
         const next = createEmptyItem();
-        form.items = [...form.items, phoneForm && last ? { ...next, unitPrice: last.unitPrice, vatRate: last.vatRate } : next];
+        form.items = [...form.items, phoneForm && last ? { ...next, unit: last.unit, unitPrice: last.unitPrice, vatRate: last.vatRate } : next];
     }
 
     // ---------------------------------------------------------------- phones
@@ -644,6 +650,7 @@
                 items: form.items.map((item) => ({
                     ...item,
                     quantity: Number(item.quantity),
+                    unit: item.unit.trim(),
                     unitPrice: Number(item.unitPrice),
                 })),
             });
@@ -905,7 +912,7 @@
                             </Button>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-[minmax(0,1fr)_4.5rem_minmax(0,1fr)] gap-2">
                             <label class="block text-xs font-medium text-[var(--stor-muted-text)]">
                                 Quantity
                                 <Input
@@ -915,6 +922,16 @@
                                     step="0.01"
                                     bind:value={item.quantity}
                                     class="mt-1 px-2 py-2 text-right text-sm"
+                                />
+                            </label>
+                            <label class="block text-xs font-medium text-[var(--stor-muted-text)]">
+                                Unit
+                                <Input
+                                    aria-label={`Line ${index + 1} unit`}
+                                    maxlength={16}
+                                    autocomplete="off"
+                                    bind:value={item.unit}
+                                    class="mt-1 px-2 py-2 text-sm"
                                 />
                             </label>
                             <label class="block text-xs font-medium text-[var(--stor-muted-text)]">

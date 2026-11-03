@@ -4,6 +4,8 @@
     interface LineItem {
         description: string;
         quantity: number;
+        /** Optional unit label (e.g. HOD) shown after the quantity. */
+        unit?: string;
         unitPrice: number;
         vatRate: number;
         /** Extended net amount, computed the way each direction stores it. */
@@ -64,7 +66,7 @@
                                 <span
                                     class="mt-0.5 block text-xs text-[var(--stor-muted-text)] sm:hidden"
                                 >
-                                    {item.quantity} × {formatInvoiceAmount(
+                                    {item.quantity}{item.unit ? ` ${item.unit}` : ""} × {formatInvoiceAmount(
                                         item.unitPrice,
                                     )}
                                 </span>
@@ -72,7 +74,7 @@
                             <td
                                 class="hidden px-3 py-2 text-right tabular-nums text-[var(--stor-muted-text)] sm:table-cell"
                             >
-                                {item.quantity}
+                                {item.quantity}{item.unit ? ` ${item.unit}` : ""}
                             </td>
                             <td
                                 class="hidden px-3 py-2 text-right tabular-nums text-[var(--stor-muted-text)] sm:table-cell"

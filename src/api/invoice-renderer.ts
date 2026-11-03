@@ -47,6 +47,8 @@ export interface InvoiceLineItemSnapshot {
     quantity: string;
     unitPrice: string;
     vatRate: number;
+    /** Printed after the PDF quantity and written to ISDOC `InvoicedQuantity/@unitCode`. */
+    unitCode?: string;
 }
 
 export interface InvoiceBankAccountSnapshot {
@@ -210,6 +212,8 @@ function mapLineItems(itemsJson: string): InvoiceLineItemSnapshot[] {
                 422,
             );
         }
+        // The renderer rejects an empty unitCode; a line without a unit omits it.
+        const unit = typeof item.unit === "string" ? item.unit.trim() : "";
         return {
             description:
                 typeof item.description === "string" ? item.description : "",
@@ -218,6 +222,7 @@ function mapLineItems(itemsJson: string): InvoiceLineItemSnapshot[] {
             }),
             unitPrice: toDecimalString(Number(item.unitPrice), "line unit price"),
             vatRate: rawVatRate,
+            ...(unit ? { unitCode: unit } : {}),
         };
     });
 }
