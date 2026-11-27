@@ -22,7 +22,7 @@
     } = $props();
 </script>
 
-<div class="min-w-0 rounded-[14px] bg-[var(--stor-surface-muted)] p-3.5 shadow-[inset_0_0_0_1px_var(--stor-border)]">
+<div class="min-w-0 rounded-[14px] bg-[var(--stor-surface-muted)] p-3.5 shadow-[inset_0_0_0_1.5px_var(--stor-field-line)]">
     <p
         class="stor-overline"
     >

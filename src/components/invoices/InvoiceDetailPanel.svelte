@@ -219,7 +219,7 @@
     </div>
 
     <!-- Phones fold the parties and dates; the supplier is you, so it comes last. -->
-    <div class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_62%,transparent)] border-y border-[color-mix(in_srgb,var(--stor-border)_62%,transparent)] md:hidden">
+    <div class="md:hidden">
         <details class="group" open>
             <summary class="flex min-h-14 cursor-pointer list-none items-center gap-3 py-2 [&::-webkit-details-marker]:hidden">
                 <span class="min-w-0 flex-1">
@@ -268,7 +268,7 @@
     <div class="space-y-5 {filesOpen ? '' : 'max-md:hidden'}">
     {#if invoice.description}
         <section aria-label="Invoice notes">
-            <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Notes</h3>
+            <h3 class="stor-panel-title pb-2">Notes</h3>
             <p
                 class="mt-1 whitespace-pre-wrap text-sm text-[var(--stor-muted-text)]"
             >

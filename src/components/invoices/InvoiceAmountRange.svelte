@@ -110,12 +110,12 @@
         <label class="text-xs font-medium text-[var(--stor-muted-text)]">Minimum
             <input type="number" step="any" aria-label={`${label} minimum`} value={displayMin} disabled={!domain}
                 oninput={(event) => range = { ...range, min: event.currentTarget.value }}
-                class="mt-1 h-10 w-full rounded-lg border border-[var(--stor-field-border)] bg-[var(--stor-surface)] px-3 text-sm tabular-nums text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
+                class="mt-1 h-10 w-full stor-field-control px-3 text-sm tabular-nums text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
         </label>
         <label class="text-xs font-medium text-[var(--stor-muted-text)]">Maximum
             <input type="number" step="any" aria-label={`${label} maximum`} value={displayMax} disabled={!domain}
                 oninput={(event) => range = { ...range, max: event.currentTarget.value }}
-                class="mt-1 h-10 w-full rounded-lg border border-[var(--stor-field-border)] bg-[var(--stor-surface)] px-3 text-sm tabular-nums text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
+                class="mt-1 h-10 w-full stor-field-control px-3 text-sm tabular-nums text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
         </label>
     </div>
 </div>

@@ -827,7 +827,7 @@
 
         {#if invoice.description}
             <section aria-label="Invoice notes">
-                <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Notes</h3>
+                <h3 class="stor-panel-title pb-2">Notes</h3>
                 <p class="mt-1 whitespace-pre-wrap text-sm text-[var(--stor-muted-text)]">{invoice.description}</p>
             </section>
         {/if}
@@ -852,7 +852,7 @@
 
         {#if sourceInfo}
             <section aria-label="Data source">
-                <h3 class="stor-panel-title border-b border-[var(--stor-border)] pb-2">Data source</h3>
+                <h3 class="stor-panel-title pb-2">Data source</h3>
                 <div class="mt-2 rounded-xl bg-[var(--stor-surface-muted)] p-3 text-sm text-[var(--stor-ink)]">
                     <p class="font-semibold">
                         {sourceInfo.source === 'isdoc' ? (sourceInfo.origin === 'separate' ? 'Uploaded ISDOC file' : 'Attached ISDOC') : sourceInfo.source === 'ai' ? `AI (${sourceInfo.provider || 'provider'}${sourceInfo.model ? ` ${sourceInfo.model}` : ''})` : 'Entered manually'}{#if sourceInfo.isdocVersion} · ISDOC {sourceInfo.isdocVersion}{/if}
@@ -963,13 +963,13 @@
             <input type="file" accept="application/pdf,.pdf" class="sr-only" onchange={(event) => { void handleFileChange(event.currentTarget.files?.[0] ?? null); }} />
         </label>
         {#if file && extraction?.xml == null && extractionStatus !== 'reading'}
-            <div class="rounded-xl border border-[var(--stor-border)] bg-[var(--stor-surface-muted)] p-3 text-sm" role="status">
+            <div class="rounded-xl bg-[var(--stor-surface-muted)] p-3 text-sm" role="status">
                 <p class="font-semibold text-[var(--stor-ink)]">{extractionStatus === 'unreadable' ? 'The PDF could not be read' : 'No attached ISDOC found'}</p>
                 <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
                     {extractionStatus === 'unreadable' ? `${extractionNotice} ` : ''}Choose how to fill the invoice; the fields stay editable.
                 </p>
                 <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <label class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--stor-border)] bg-[var(--stor-surface)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)] {isdocFileBusy ? 'pointer-events-none opacity-60' : ''}">
+                    <label class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--stor-surface)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)] {isdocFileBusy ? 'pointer-events-none opacity-60' : ''}">
                         <IconFileUpload class="h-4 w-4" />
                         {isdocFileBusy ? 'Reading…' : 'Upload ISDOC file'}
                         <input
@@ -1051,7 +1051,7 @@
         {#if !notesOpen && !description}
             <FoldLine bind:open={notesOpen} tone="link" summary="Description" />
         {:else}
-        <label class="block text-sm">Description (optional)<textarea rows="2" bind:value={description} onblur={() => void suggestExpense()} class="mt-1 w-full rounded-lg border border-[var(--stor-border)] bg-[var(--stor-surface)] px-3 py-2"></textarea></label>
+        <label class="block text-sm">Description (optional)<textarea rows="2" bind:value={description} onblur={() => void suggestExpense()} class="mt-1 w-full rounded-lg bg-[var(--stor-surface)] px-3 py-2"></textarea></label>
         {/if}
                 {#if formError}<p role="alert" class="text-sm text-[var(--stor-accent-strong)]">{formError}</p>{/if}
     </form>

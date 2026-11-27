@@ -647,7 +647,7 @@
     {/if}
         <button type="button" style:order={phone.current ? 9 : undefined} onclick={() => { if (phone.current) optionsOpen = true; else filtersOpen = true; }}
             aria-label={phone.current ? "List options" : "Filters"}
-            class="inline-flex h-10 items-center gap-2 rounded-lg border border-[var(--stor-border)] bg-[var(--stor-surface-raised)] px-3 text-sm font-semibold text-[var(--stor-ink)] shadow-[var(--stor-shadow-sm)] transition hover:bg-[var(--stor-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
+            class="inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--stor-surface-raised)] px-3 text-sm font-semibold text-[var(--stor-ink)] shadow-[var(--stor-shadow-sm)] transition hover:bg-[var(--stor-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]"
             class:stor-mobile-fab={phone.current}
             data-options-fab
         >
@@ -673,7 +673,7 @@
         <div class="flex flex-col gap-4">
             <input type="search" aria-label="Search invoices" placeholder={`Number or ${partyLabel.toLocaleLowerCase()}`} value={searchFilter}
                 oninput={(event) => { searchFilter = event.currentTarget.value; page = 1; }}
-                class="h-11 w-full rounded-xl border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-base text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
+                class="h-11 w-full rounded-xl bg-[var(--stor-surface-well)] shadow-[var(--stor-field-inset),inset_0_-1.5px_0_var(--stor-field-line)] px-3 text-base text-[var(--stor-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--stor-selected)]" />
             <div class="flex flex-col gap-1.5">
                 <span class="text-sm font-medium text-[var(--stor-ink)]">Status</span>
                 <ChoiceChips label="Status" options={statusChips.map((option) => ({ value: option.value, label: option.value === 'overdue' && overdueCount > 0 ? `${option.label} · ${overdueCount}` : option.label }))} value={statusFilter} onChange={(value) => setStatus(value)} />
@@ -716,7 +716,7 @@
 
 <!-- Phones: the list's options in one sheet: the filters, Select, and Import where there is one. -->
 <Modal show={optionsOpen} title={`${tableLabel} options`} onClose={() => (optionsOpen = false)}>
-    <div class="flex flex-col divide-y divide-[color-mix(in_srgb,var(--stor-border)_62%,transparent)]">
+    <div class="flex flex-col ">
         <button type="button" class="flex min-h-16 items-center gap-3 text-left" onclick={() => (filtersOpen = true)}>
             <span class="min-w-0 flex-1"><span class="block text-[15px] font-medium text-[var(--stor-ink)]">Filters and sort</span><span class="block text-[12.5px] text-[var(--stor-muted-text)]">{filterChips.length ? `${filterChips.length} on` : `Status, ${partyLabel.toLocaleLowerCase()}, dates and amounts`}</span></span>
             <IconChevronRight class="h-5 w-5 shrink-0 text-[var(--stor-muted-text)]" />
@@ -782,24 +782,24 @@
             </colgroup>
             <thead class="stor-overline">
                 <tr>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom"><input type="checkbox" aria-label="Select all filtered invoices" checked={pageFullySelected} indeterminate={pageSelected.length > 0 && !pageFullySelected} onchange={togglePage} /></th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'party' || sorting[0]?.id === 'invoiceNumber' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom"><input type="checkbox" aria-label="Select all filtered invoices" checked={pageFullySelected} indeterminate={pageSelected.length > 0 && !pageFullySelected} onchange={togglePage} /></th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'party' || sorting[0]?.id === 'invoiceNumber' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>
                         <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
                             {@render sortHeader('party', partyLabel)}
                             <span class="text-[var(--stor-border-strong)]" aria-hidden="true">/</span>
                             {@render sortHeader('invoiceNumber', 'Invoice')}
                         </span>
                     </th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'issued' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('issued', 'Issued')}</th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'due' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('due', 'Due')}</th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'beforeVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('beforeVat', 'Before VAT')}</th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'afterVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('afterVat', 'Total payable')}</th>
-                    {#if showExpenseType}<th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom">Type</th>{/if}
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'status' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('status', 'Status')}</th>
-                    <th scope="col" class="border-b border-[var(--stor-border-strong)] px-3 pb-2 pt-0 align-bottom text-right">Actions</th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'issued' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('issued', 'Issued')}</th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'due' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('due', 'Due')}</th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'beforeVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('beforeVat', 'Before VAT')}</th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom text-right" aria-sort={sorting[0]?.id === 'afterVat' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('afterVat', 'Total payable')}</th>
+                    {#if showExpenseType}<th scope="col" class="px-3 pb-2 pt-0 align-bottom">Type</th>{/if}
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom" aria-sort={sorting[0]?.id === 'status' ? sorting[0].desc ? 'descending' : 'ascending' : 'none'}>{@render sortHeader('status', 'Status')}</th>
+                    <th scope="col" class="px-3 pb-2 pt-0 align-bottom text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_55%,transparent)]">
+            <tbody class="">
                 {#each rowGroups as group (group.key)}
                     {#if group.title}
                         <tr class="h-12" aria-hidden="true">
@@ -830,7 +830,7 @@
     </div>
     <!-- Below 768 px rows have no checkbox until press and hold; while selecting, a tap ticks the row. -->
     <div
-        class="divide-y divide-[var(--stor-border)] {selectionCount ? 'pb-44' : ''} lg:hidden"
+        class="{selectionCount ? 'pb-44' : ''} lg:hidden"
         data-invoice-phone-list
         data-selecting={selectingNow ? 'true' : 'false'}
         use:longPress={{ selector: '[data-invoice-row]', onLongPress: (element) => { pressEnding = true; setTimeout(() => (pressEnding = false), 800); toggleRow(element.dataset.invoiceRow ?? ''); } }}
@@ -848,11 +848,11 @@
         {/each}
     </div>
     {#if pageCount > 1}
-        <nav class="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--stor-border)] p-3 text-sm" aria-label="Invoice pages">
+        <nav class="flex flex-wrap items-center justify-between gap-3 p-3 text-sm" aria-label="Invoice pages">
             <span class="text-xs text-[var(--stor-muted-text)]">Page {currentPage} of {pageCount} · {matchCount} matching</span>
             <div class="flex items-center gap-2">
-                <button type="button" disabled={currentPage <= 1} onclick={() => page = Math.max(1, currentPage - 1)} class="h-9 rounded-lg border border-[var(--stor-border)] px-3 font-semibold text-[var(--stor-ink)] disabled:opacity-40">Previous</button>
-                <button type="button" disabled={currentPage >= pageCount} onclick={() => page = Math.min(pageCount, currentPage + 1)} class="h-9 rounded-lg border border-[var(--stor-border)] px-3 font-semibold text-[var(--stor-ink)] disabled:opacity-40">Next</button>
+                <button type="button" disabled={currentPage <= 1} onclick={() => page = Math.max(1, currentPage - 1)} class="h-9 rounded-lg px-3 font-semibold text-[var(--stor-ink)] disabled:opacity-40">Previous</button>
+                <button type="button" disabled={currentPage >= pageCount} onclick={() => page = Math.min(pageCount, currentPage + 1)} class="h-9 rounded-lg px-3 font-semibold text-[var(--stor-ink)] disabled:opacity-40">Next</button>
             </div>
         </nav>
     {/if}

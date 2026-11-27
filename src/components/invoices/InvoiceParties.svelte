@@ -347,7 +347,7 @@
 {:else}
     <section class="stor-panel" style:overflow="visible" aria-label="Party directory">
         <div class="flex flex-wrap items-center gap-x-3 gap-y-2.5 px-[var(--stor-panel-padding)] py-3.5">
-            <label class="flex h-10 w-full max-w-[19rem] items-center gap-2.5 rounded-[10px] border border-[var(--stor-field-border)] bg-[var(--stor-surface-well)] px-3 text-[var(--stor-muted-text)] focus-within:ring-2 focus-within:ring-[var(--stor-focus)]">
+            <label class="flex h-10 w-full max-w-[19rem] items-center gap-2.5 rounded-[10px] bg-[var(--stor-surface-well)] shadow-[var(--stor-field-inset),inset_0_-1.5px_0_var(--stor-field-line)] px-3 text-[var(--stor-muted-text)] focus-within:ring-2 focus-within:ring-[var(--stor-focus)]">
                 <IconSearch class="h-4 w-4 shrink-0" />
                 <input id="party-search" type="search" aria-label="Search parties" placeholder="Name, IČO, city…" bind:value={search} class="min-w-0 flex-1 bg-transparent text-sm text-[var(--stor-ink)] outline-none placeholder:text-[var(--stor-muted-text)]" />
             </label>
@@ -422,7 +422,7 @@
     {/if}
 
     {#if rows.length === 0}
-        <div class="border-t border-[var(--stor-border)] px-6 py-12 text-center">
+        <div class="px-6 py-12 text-center">
             <p class="font-semibold text-[var(--stor-ink)]">{active.length === 0 ? 'No parties yet' : 'No matching parties'}</p>
             <p class="mt-1 text-sm text-[var(--stor-muted-text)]">
                 {active.length === 0
@@ -444,7 +444,7 @@
                 <thead class="stor-overline bg-[var(--stor-surface-muted)]">
                     <tr class="h-[38px]">
                         {#each SORT_COLUMNS as column (column.key)}
-                            <th scope="col" class="border-y border-[var(--stor-border)] px-4 {column.right ? 'text-right' : ''}" aria-sort={sortState(column.key)}>
+                            <th scope="col" class="px-4 {column.right ? 'text-right' : ''}" aria-sort={sortState(column.key)}>
                                 <button type="button" onclick={() => sortBy(column.key)} class="inline-flex items-center gap-1 font-[inherit] [text-transform:inherit] hover:text-[var(--stor-accent-strong)] focus-visible:outline-2 focus-visible:outline-[var(--stor-focus)]" aria-label={`Sort by ${column.label}`}>
                                     {column.label}
                                     {#if sortKey === column.key}
@@ -453,10 +453,10 @@
                                 </button>
                             </th>
                         {/each}
-                        <th scope="col" class="border-y border-[var(--stor-border)] px-4"><span class="sr-only">Actions</span></th>
+                        <th scope="col" class="px-4"><span class="sr-only">Actions</span></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[color-mix(in_srgb,var(--stor-border)_55%,transparent)]">
+                <tbody class="">
                     {#each rows as party (party.id)}
                         {@const entry = usage.get(party.id)}
                         <tr class="group h-16 transition-colors hover:bg-[var(--stor-surface-muted)]/70 {selectedId === party.id ? 'bg-[var(--stor-accent-soft)]' : ''}">
@@ -469,7 +469,7 @@
                                     onclick={() => (selectedId = party.id)}
                                     class="flex w-full min-w-0 items-center gap-3 text-left"
                                 >
-                                    <span class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--stor-surface-muted)] text-xs font-semibold tracking-wide text-[var(--stor-muted-text)] shadow-[inset_0_0_0_1px_var(--stor-border)]" aria-hidden="true">{initials(party.name)}</span>
+                                    <span class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--stor-surface-muted)] text-xs font-semibold tracking-wide text-[var(--stor-muted-text)] shadow-[inset_0_0_0_1.5px_var(--stor-field-line)]" aria-hidden="true">{initials(party.name)}</span>
                                     <span class="flex min-w-0 flex-col">
                                         <span class="truncate font-medium text-[var(--stor-ink)] group-hover:underline group-hover:decoration-[var(--stor-border-strong)] group-hover:underline-offset-4">
                                             {party.name}
@@ -498,7 +498,7 @@
             </table>
         </div>
     {/if}
-    <p class="border-t border-[var(--stor-border)] px-[var(--stor-panel-padding)] py-3 text-xs text-[var(--stor-muted-text)]">One company record serves both invoice slots. Issued documents keep the details they were saved with.</p>
+    <p class="px-[var(--stor-panel-padding)] py-3 text-xs text-[var(--stor-muted-text)]">One company record serves both invoice slots. Issued documents keep the details they were saved with.</p>
     </section>
 {/if}
 

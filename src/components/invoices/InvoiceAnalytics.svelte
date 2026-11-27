@@ -536,7 +536,7 @@
     <div class="stor-performance-report stor-panel space-y-4">
 
         <section
-            class="stor-analytics-hero grid gap-5 p-[var(--stor-panel-padding)] sm:grid-cols-3 sm:gap-0 sm:p-0 sm:[&>div]:px-6 sm:[&>div]:py-5 sm:[&>div+div]:border-l sm:[&>div+div]:border-[var(--stor-border)]"
+            class="stor-analytics-hero grid gap-5 p-[var(--stor-panel-padding)] sm:grid-cols-3 sm:gap-0 sm:p-0 sm:[&>div]:px-6 sm:[&>div]:py-5 "
             aria-label={`Totals for ${periodLabel}`}
         >
             {#each kpis as kpi (kpi.label)}
@@ -595,7 +595,7 @@
                     <p class="mt-2 text-xs text-[var(--stor-muted-text)]">Select a column or choose a period to inspect its invoices.</p>
                 </div>
                 {#if inspectedBucket}
-                    <section class="stor-period-inspection border-t border-[var(--stor-border)] pt-4" aria-label="Selected period">
+                    <section class="stor-period-inspection pt-4" aria-label="Selected period">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <h3 class="font-semibold text-[var(--stor-ink)]">{inspectedBucket.label}{#if inspectedBucket.key === currentBucketKey} · partial period{/if}</h3>
                             <Select ariaLabel="Inspect period" value={inspectedBucket.key} options={buckets.map((bucket) => ({ value: bucket.key, label: bucket.label }))} onValueChange={(value) => inspectedKey = value} class="w-36" />
@@ -624,7 +624,7 @@
                         </button>
                     </div>
                     <div class={showPeriodTable ? 'mt-3' : 'hidden'}>
-                        <div class="max-h-[22rem] overflow-auto rounded-xl border border-[var(--stor-border)]">
+                        <div class="max-h-[22rem] overflow-auto rounded-xl ">
                             <table class="w-full min-w-[26rem] border-collapse text-left text-sm" aria-label="Period detail">
                                 <thead class="sticky top-0 z-10 bg-[var(--stor-surface-muted)] text-xs text-[var(--stor-muted-text)]">
                                     <tr>
@@ -634,7 +634,7 @@
                                         <th scope="col" class="px-2 py-2 text-right">Difference</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-[var(--stor-border)]">
+                                <tbody class="">
                                     {#each buckets as bucket, index (bucket.key)}
                                         <tr>
                                             <td class="whitespace-nowrap px-2 py-2">
@@ -708,7 +708,7 @@
                 {@const vatPeak = Math.max(1, ...vatReport.quarters.map((row) => Math.max(row.issuedVat, row.receivedVat)))}
                 <ol class="grid gap-3.5 px-[var(--stor-panel-padding)] pb-5 sm:grid-cols-2 xl:grid-cols-4" aria-label="VAT by quarter at a glance">
                     {#each vatReport.quarters as row, index (row.key)}
-                        <li class="flex flex-col gap-3.5 rounded-2xl bg-[var(--stor-surface)] p-4 {vatMarkerIndex === index ? 'shadow-[inset_0_0_0_1.5px_var(--stor-accent-strong)]' : 'shadow-[inset_0_0_0_1px_var(--stor-border)]'}">
+                        <li class="flex flex-col gap-3.5 rounded-2xl bg-[var(--stor-surface)] p-4 {vatMarkerIndex === index ? 'shadow-[inset_0_0_0_1.5px_var(--stor-accent-strong)]' : 'shadow-[inset_0_0_0_1.5px_var(--stor-field-line)]'}">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-[20px] font-medium tracking-tight text-[var(--stor-ink)]">{row.label}</span>
                                 {#if vatMarkerIndex === index}<span class="rounded-full bg-[var(--stor-accent-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--stor-accent-strong)]">Current</span>{/if}
@@ -723,7 +723,7 @@
                                 <span class="h-2 rounded bg-[var(--stor-chart-received,var(--stor-muted-text))]" style:width={`${(row.receivedVat / vatPeak) * 100}%`} aria-hidden="true"></span>
                                 <span class="flex justify-between">Input<strong class="font-semibold tabular-nums text-[var(--stor-ink)]">{money(row.receivedVat)}</strong></span>
                             </div>
-                            <div class="mt-auto flex gap-4 border-t border-[var(--stor-border)] pt-3 text-[13px] font-semibold text-[var(--stor-accent-strong)]">
+                            <div class="mt-auto flex gap-4 pt-3 text-[13px] font-semibold text-[var(--stor-accent-strong)]">
                                 <button type="button" class="hover:underline" onclick={() => drillVatQuarter(index, 'issued')}>Issued →</button>
                                 <button type="button" class="hover:underline" onclick={() => drillVatQuarter(index, 'received')}>Received →</button>
                             </div>
@@ -762,7 +762,7 @@
                     </div>
                     {#if vatReport.quarters.length > 0}
                         <div class={showVatTable ? 'mt-3' : 'mt-3 hidden lg:block'}>
-                            <div class="overflow-x-auto rounded-xl border border-[var(--stor-border)]">
+                            <div class="overflow-x-auto rounded-xl ">
                                 <table class="w-full min-w-[26rem] border-collapse text-left text-sm" aria-label="VAT by quarter detail">
                                     <thead class="bg-[var(--stor-surface-muted)] text-xs text-[var(--stor-muted-text)]">
                                         <tr>
@@ -772,7 +772,7 @@
                                             <th scope="col" class="px-3 py-2 text-right">Due / credit</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-[var(--stor-border)]">
+                                    <tbody class="">
                                         {#each vatReport.quarters as row, index (row.key)}
                                             <tr class={vatMarkerIndex === index ? 'bg-[var(--stor-accent-soft)]' : ''}>
                                                 <td class="whitespace-nowrap px-3 py-2">
@@ -945,7 +945,7 @@
                                 <th scope="col" class="px-3 py-3 text-right">Effective rate</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[var(--stor-border)]">
+                        <tbody class="">
                             {#each taxRows as row (row.year)}
                                 <tr class={selectedYear === row.year ? 'bg-[var(--stor-accent-soft)]' : ''}>
                                     <td class="px-3 py-3">

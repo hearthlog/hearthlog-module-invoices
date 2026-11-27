@@ -77,7 +77,7 @@
 
 <div class="flex min-h-0 flex-1 flex-col">
     <div
-        class="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[var(--stor-border)] px-3 py-2 sm:px-4"
+        class="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4"
     >
         <p class="min-w-0 flex-1 truncate text-xs text-[var(--stor-muted-text)]">
             {fileName}
@@ -85,7 +85,7 @@
         {#if url}
             <div class="flex shrink-0 items-center gap-1.5">
                 <a
-                    class="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[var(--stor-border)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)]"
+                    class="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)]"
                     href={url}
                     download={fileName}
                 >
@@ -93,7 +93,7 @@
                     Download
                 </a>
                 <a
-                    class="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[var(--stor-border)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)]"
+                    class="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)]"
                     href={url}
                     target="_blank"
                     rel="noopener"

@@ -712,6 +712,7 @@
         title="Invoices"
         class="max-md:sr-only"
         sidebarTabs
+        sticky
         tabs={invoiceTabs}
     >
         <!-- Below lg these actions float at the thumb's corner instead of taking a row above the list. -->

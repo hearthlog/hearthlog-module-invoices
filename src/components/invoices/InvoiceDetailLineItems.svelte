@@ -40,7 +40,7 @@
         >
             <table class="w-full text-left text-sm">
                 <thead>
-                    <tr class="stor-overline border-b border-[var(--stor-border)]">
+                    <tr class="stor-overline ">
                         <th class="px-3 py-2 font-medium">Item</th>
                         <th
                             class="hidden px-3 py-2 text-right font-medium sm:table-cell"
@@ -58,7 +58,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[var(--stor-border)]">
+                <tbody class="">
                     {#each items as item, index}
                         <tr>
                             <td class="px-3 py-2 text-[var(--stor-ink)]">
@@ -115,7 +115,7 @@
                 </div>
             {/each}
             <div
-                class="mt-1 flex justify-between gap-3 border-t border-[var(--stor-border)] pt-2.5 text-[15px] font-semibold text-[var(--stor-ink)]"
+                class="mt-1 flex justify-between gap-3 pt-2.5 text-[15px] font-semibold text-[var(--stor-ink)]"
             >
                 <dt>Payable</dt>
                 <dd class="tabular-nums">{formatInvoiceAmount(total)}</dd>
