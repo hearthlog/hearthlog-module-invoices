@@ -59,12 +59,12 @@
                     <Amount value={overview.outstanding} {unit} />
                 </Metric>
             </div>
-            <div class="min-w-0 {sheet ? 'border-t border-[var(--stor-border)] pt-4' : 'border-l border-[var(--stor-border)] px-3 sm:px-6'}">
+            <div class="min-w-0 {sheet ? 'pt-4' : 'px-3 sm:px-6'}">
                 <Metric label="Overdue" tone={overview.overdueCount > 0 ? "negative" : "neutral"} detail={overview.overdueCount > 0 ? `${formatNumber(overview.overdueCount)} past due` : "Nothing late"}>
                     <Amount value={overview.overdue} {unit} />
                 </Metric>
             </div>
-            <div class="min-w-0 {sheet ? 'border-t border-[var(--stor-border)] pt-4' : 'border-l border-[var(--stor-border)] px-3 sm:pl-6 sm:pr-0'}">
+            <div class="min-w-0 {sheet ? 'pt-4' : 'px-3 sm:pl-6 sm:pr-0'}">
                 <Metric label={`Invoiced in ${quarterLabel}`} detail="Payable totals by issue date">
                     <Amount value={overview.invoiced} {unit} />
                 </Metric>

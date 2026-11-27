@@ -19,7 +19,7 @@
 
 .stor-performance-report .stor-analytics-hero { background: transparent; box-shadow: none; }
 
-.stor-performance-chart { border-top: 1px solid var(--stor-border); }
+.stor-performance-chart { }
 
 .stor-period-inspection dd { overflow-wrap: anywhere; }
 
@@ -42,7 +42,7 @@
 }
 
 /* Party monogram tile used in the invoice and party tables. */
-.stor-monogram { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--stor-surface-muted); box-shadow: inset 0 0 0 1px var(--stor-border); color: var(--stor-muted-text); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+.stor-monogram { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--stor-surface-muted); color: var(--stor-muted-text); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
 [aria-selected="true"] .stor-monogram, tr:has(input[type="checkbox"]:checked) .stor-monogram { background: var(--stor-surface); color: var(--stor-accent-strong); }
 
 /* Rounded checkbox that fills with the action colour; the selection dock appears once one is ticked. */

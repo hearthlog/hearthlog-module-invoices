@@ -200,12 +200,12 @@
     {/if}
 
     {#if status === 'reading'}
-        <div class="mt-3 rounded-xl border border-[var(--stor-border)] bg-[var(--stor-surface)] p-3 text-sm" role="status">
+        <div class="mt-3 rounded-xl bg-[var(--stor-surface)] p-3 text-sm" role="status">
             <p class="font-semibold text-[var(--stor-ink)]">Looking for an attached ISDOC…</p>
             <p class="mt-1 text-xs text-[var(--stor-muted-text)]">The file is read on this device; nothing is uploaded for reading.</p>
         </div>
     {:else if status === 'found'}
-        <div class="mt-3 rounded-xl border border-[var(--stor-positive)] bg-[var(--stor-positive-soft)] p-3 text-sm" role="status">
+        <div class="mt-3 rounded-xl bg-[var(--stor-positive-soft)] p-3 text-sm" role="status">
             <p class="font-semibold text-[var(--stor-positive)]">{origin === 'separate' ? 'Filled from the ISDOC file' : 'Filled from attached ISDOC'}</p>
             <p class="mt-1 text-xs text-[var(--stor-muted-text)]">Review the values below, then import the invoice.</p>
             {#if notice}<p class="mt-1 text-xs text-[var(--stor-muted-text)]">{notice}</p>{/if}
@@ -220,13 +220,13 @@
     {/if}
 
     {#if file && status !== 'reading' && status !== 'found'}
-        <div class="mt-3 rounded-xl border border-[var(--stor-border)] bg-[var(--stor-surface)] p-3 text-sm" role="status">
+        <div class="mt-3 rounded-xl bg-[var(--stor-surface)] p-3 text-sm" role="status">
             <p class="font-semibold text-[var(--stor-ink)]">{status === 'unreadable' ? 'The PDF could not be read' : 'No attached ISDOC found'}</p>
             <p class="mt-1 text-xs text-[var(--stor-muted-text)]">
                 {status === 'unreadable' ? `${notice} ` : ''}Choose how to fill the invoice; the fields stay editable.
             </p>
             <div class="mt-2 flex flex-wrap items-center gap-2">
-                <label class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--stor-border)] bg-[var(--stor-surface)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)] {isdocFileBusy || disabled ? 'pointer-events-none opacity-60' : ''}">
+                <label class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--stor-surface)] px-3 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface-muted)] {isdocFileBusy || disabled ? 'pointer-events-none opacity-60' : ''}">
                     <IconFileUpload class="h-4 w-4" />
                     {isdocFileBusy ? 'Reading…' : 'Upload ISDOC file'}
                     <input

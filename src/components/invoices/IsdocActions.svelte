@@ -62,7 +62,7 @@
 <div class="ml-auto flex shrink-0 items-center gap-1.5">
     <button
         type="button"
-        class="inline-flex min-h-8 items-center gap-1 rounded-lg border border-[var(--stor-border)] px-2.5 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface)] disabled:opacity-50"
+        class="inline-flex min-h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface)] disabled:opacity-50"
         disabled={busy || disabled}
         onclick={view}
     >
@@ -70,7 +70,7 @@
     </button>
     <button
         type="button"
-        class="inline-flex min-h-8 items-center gap-1 rounded-lg border border-[var(--stor-border)] px-2.5 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface)] disabled:opacity-50"
+        class="inline-flex min-h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-[var(--stor-ink)] transition hover:bg-[var(--stor-surface)] disabled:opacity-50"
         disabled={busy || disabled}
         onclick={download}
     >
